@@ -9,7 +9,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data 
     env_file:
-      - .env
+      - src/.env
     ports:
       - "${DB_CONFIG__DB_PORT}:5432"
 
