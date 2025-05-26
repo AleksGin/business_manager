@@ -29,3 +29,4 @@ class Base(DeclarativeBase):
         server_onupdate=func.now(),
         onupdate=datetime.now,
     )
+    
