@@ -1,5 +1,8 @@
 from datetime import date
-from typing import List
+from typing import (
+    TYPE_CHECKING,
+    List,
+)
 from uuid import UUID
 
 from sqlalchemy import (
@@ -13,6 +16,9 @@ from sqlalchemy.orm import (
 )
 
 from core.models import Base
+
+if TYPE_CHECKING:
+    from teams.models import Team
 
 
 class RoleEnum(Enum):
@@ -50,12 +56,9 @@ class Users(Base):
         "StructureElement",
         back_populates="director",
     )
-    messages: Mapped[List["Message"]] = relationship(
-        "Message",
-        back_populates="author"
+    messages: Mapped[List["Message"]] = relationship("Message", back_populates="author")
+    tasks: Mapped[List["Tasks"]] = relationship("Tasks", back_populates="performer")
+    team: Mapped["Team"] = relationship(
+        "Team",
+        back_populates="owner_id",
     )
-    tasks: Mapped[List["Tasks"]] = relationship(
-        "Task",
-        back_populates="performer"
-    )
-    
