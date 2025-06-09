@@ -24,7 +24,7 @@ class Base(DeclarativeBase):
 
     uuid: Mapped[UUID] = mapped_column(primary_key=True, unique=True, default=uuid4)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-    update_at: Mapped[datetime] = mapped_column(
+    updated_at: Mapped[datetime] = mapped_column(
         server_default=func.now(),
         server_onupdate=func.now(),
         onupdate=datetime.now,
