@@ -1,3 +1,4 @@
+import enum as PyEnum
 from datetime import date
 from typing import (
     TYPE_CHECKING,
@@ -17,22 +18,24 @@ from sqlalchemy.orm import (
 
 from core.models import Base
 
+
+class RoleEnum(PyEnum.Enum):
+    EMPLOYEE = "Employee"
+    MANAGER = "Manager"
+    ADMIN = "Administrator"
+
+
+class GenderEnum(PyEnum.Enum):
+    MALE = "Man"
+    FEMALE = "Woman"
+
+
 if TYPE_CHECKING:
     from teams.models import Team
+    from tasks.models import Task
 
 
-class RoleEnum(Enum):
-    Empl: str = "Employee"
-    Manager: str = "Manager"
-    Admin: str = "Administrator"
-
-
-class GenderEnum(Enum):
-    male: str = "Man"
-    female: str = "Woman"
-
-
-class Users(Base):
+class User(Base):
     email: Mapped[str] = mapped_column(unique=True)
     password: Mapped[str] = mapped_column(nullable=True)
     is_active: Mapped[bool] = mapped_column(default=True)
@@ -40,25 +43,36 @@ class Users(Base):
 
     name: Mapped[str] = mapped_column(nullable=False)
     surname: Mapped[str] = mapped_column(nullable=False)
-    gender: Mapped["GenderEnum"] = mapped_column(nullable=False)
-    birth_date: Mapped[date] = mapped_column(nullable=False)
-    role: Mapped["RoleEnum"] = mapped_column(nullable=True)
-    departament_uuid: Mapped[UUID] = mapped_column(
-        f"{ForeignKey(Structure.__tablename__)}.uuid",
-        ondelete="SET NULL",
+    gender: Mapped[GenderEnum] = mapped_column(
+        Enum(GenderEnum),
         nullable=False,
     )
-    departament: Mapped["Structure"] = relationship(
-        "Structure",
-        back_populates="workers",
+    birth_date: Mapped[date] = mapped_column(nullable=False)
+    role: Mapped[RoleEnum] = mapped_column(
+        Enum(RoleEnum),
+        nullable=True,
     )
-    head_of: Mapped["StructureElement"] = relationship(
-        "StructureElement",
-        back_populates="director",
+    team_uuid: Mapped[UUID] = mapped_column(
+        ForeignKey(
+            "teams.uuid",
+            ondelete="SET NULL",
+        ),
+        nullable=True,
     )
-    messages: Mapped[List["Message"]] = relationship("Message", back_populates="author")
-    tasks: Mapped[List["Tasks"]] = relationship("Tasks", back_populates="performer")
     team: Mapped["Team"] = relationship(
         "Team",
-        back_populates="owner_id",
+        foreign_keys=[team_uuid],
+        back_populates="members",
+    )
+    owned_teams: Mapped[List["Team"]] = relationship(
+        "Team",
+        back_populates="owner",
+    )
+    created_tasks: Mapped[List["Task"]] = relationship(
+        "Task", foreign_keys="Task.creator_uuid", back_populates="creator"
+    )
+    assigned_tasks: Mapped[List["Task"]] = relationship(
+        "Tass",
+        foreign_keys="Task.assignee_uuid",
+        back_populates="assignee",
     )
