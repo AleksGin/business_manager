@@ -16,10 +16,14 @@ from core.models import Base
 if TYPE_CHECKING:
     from users.models import User
     from tasks.models import Task
+    from meetings.models import Meeting
 
 
 class Team(Base):
-    name: Mapped[str] = mapped_column(nullable=False)
+    name: Mapped[str] = mapped_column(
+        nullable=False,
+        unique=True,
+    )
     description: Mapped[str] = mapped_column(nullable=False)
     owner_uuid: Mapped[UUID] = mapped_column(
         ForeignKey("users.uuid"),
@@ -36,5 +40,9 @@ class Team(Base):
     )
     tasks: Mapped[List["Task"]] = relationship(
         "Task",
+        back_populates="team",
+    )
+    meetings: Mapped[List["Meeting"]] = relationship(
+        "Meeting",
         back_populates="team",
     )
