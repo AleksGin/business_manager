@@ -19,6 +19,7 @@ from core.models import Base
 if TYPE_CHECKING:
     from teams.models import Team
     from users.models import User
+    from evaluations.models import Evaluation
 
 
 class StatusEnum(PyEnum.Enum):
@@ -62,3 +63,9 @@ class Task(Base):
         "Team",
         back_populates="tasks",
     )
+    evaluation: Mapped["Evaluation"] = relationship(
+        "Evaluation", 
+        foreign_keys="Evaluation.task_uuid",
+        back_populates="task"
+    )
+    
