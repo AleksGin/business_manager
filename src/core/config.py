@@ -19,7 +19,7 @@ class DB_Config(BaseModel):
     def url(self) -> str:
         return f"postgresql+asyncpg://{self.db_user}:{self.db_password}@localhost:{self.db_port}/{self.db_name}"
     
-class Auth:
+class Auth(BaseModel):
     payload: str
     algorithm: str
 
