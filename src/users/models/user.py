@@ -16,7 +16,10 @@ from sqlalchemy.orm import (
     relationship,
 )
 
-from core.models import Base
+from core.models import (
+    Base,
+    meeting_participants,
+)
 
 
 class RoleEnum(PyEnum.Enum):
@@ -31,8 +34,10 @@ class GenderEnum(PyEnum.Enum):
 
 
 if TYPE_CHECKING:
-    from teams.models import Team
+    from meetings.models import Meeting
     from tasks.models import Task
+    from teams.models import Team
+    from evaluations.models import Evaluation
 
 
 class User(Base):
@@ -72,7 +77,25 @@ class User(Base):
         "Task", foreign_keys="Task.creator_uuid", back_populates="creator"
     )
     assigned_tasks: Mapped[List["Task"]] = relationship(
-        "Tass",
+        "Task",
         foreign_keys="Task.assignee_uuid",
         back_populates="assignee",
+    )
+    meetings: Mapped[List["Meeting"]] = relationship(
+        "Meeting",
+        secondary=meeting_participants,
+        back_populates="participants",
+    )
+    created_meetings: Mapped[List["Meeting"]] = relationship(
+        "Meeting", foreign_keys="Meeting.creator_uuid", back_populates="creator"
+    )
+    given_evaluations: Mapped[List["Evaluation"]] = relationship(
+        "Evaluation",
+        foreign_keys="Evaluation.evaluator_uuid",
+        back_populates="evaluator",
+    )
+    evaluations: Mapped[List["Evaluation"]] = relationship(
+        "Evaluation",
+        foreign_keys="Evaluation.evaluated_user_uuid",
+        back_populates="evaluated_user",
     )
