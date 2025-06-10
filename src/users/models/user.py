@@ -16,10 +16,8 @@ from sqlalchemy.orm import (
     relationship,
 )
 
-from core.models import (
-    Base,
-    meeting_participants,
-)
+from core.models.associations import meeting_participants
+from core.models.base import Base
 
 
 class RoleEnum(PyEnum.Enum):
@@ -34,10 +32,10 @@ class GenderEnum(PyEnum.Enum):
 
 
 if TYPE_CHECKING:
+    from evaluations.models import Evaluation
     from meetings.models import Meeting
     from tasks.models import Task
     from teams.models import Team
-    from evaluations.models import Evaluation
 
 
 class User(Base):

@@ -2,4 +2,4 @@ __all__ = (
     "Team",
 )
 
-from team import Team
+from .team import Team

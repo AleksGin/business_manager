@@ -14,12 +14,12 @@ from sqlalchemy.orm import (
     relationship,
 )
 
-from core.models import Base
+from core.models.base import Base
 
 if TYPE_CHECKING:
+    from evaluations.models import Evaluation
     from teams.models import Team
     from users.models import User
-    from evaluations.models import Evaluation
 
 
 class StatusEnum(PyEnum.Enum):
@@ -64,8 +64,5 @@ class Task(Base):
         back_populates="tasks",
     )
     evaluation: Mapped["Evaluation"] = relationship(
-        "Evaluation", 
-        foreign_keys="Evaluation.task_uuid",
-        back_populates="task"
+        "Evaluation", foreign_keys="Evaluation.task_uuid", back_populates="task"
     )
-    

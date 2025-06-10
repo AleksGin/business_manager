@@ -8,7 +8,6 @@ from uuid import UUID
 from sqlalchemy import (
     ForeignKey,
     String,
-    UniqueConstraint,
 )
 from sqlalchemy.orm import (
     Mapped,
@@ -16,10 +15,8 @@ from sqlalchemy.orm import (
     relationship,
 )
 
-from core.models import (
-    Base,
-    meeting_participants,
-)
+from core.models.associations import meeting_participants
+from core.models.base import Base
 
 if TYPE_CHECKING:
     from teams.models import Team
@@ -45,16 +42,9 @@ class Meeting(Base):
         nullable=False,
     )
     participants: Mapped[List["User"]] = relationship(
-        "User",
-        secondary=meeting_participants,
-        back_populates="meetings"
+        "User", secondary=meeting_participants, back_populates="meetings"
     )
     creator: Mapped["User"] = relationship(
-        "User",
-        foreign_keys=[creator_uuid],
-        back_populates="created_meetings"
+        "User", foreign_keys=[creator_uuid], back_populates="created_meetings"
     )
-    team: Mapped["Team"] = relationship(
-        "Team",
-        back_populates="meetings"
-    )
+    team: Mapped["Team"] = relationship("Team", back_populates="meetings")

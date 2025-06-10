@@ -11,12 +11,12 @@ from sqlalchemy.orm import (
     relationship,
 )
 
-from core.models import Base
+from core.models.base import Base
 
 if TYPE_CHECKING:
-    from users.models import User
-    from tasks.models import Task
     from meetings.models import Meeting
+    from tasks.models import Task
+    from users.models import User
 
 
 class Team(Base):

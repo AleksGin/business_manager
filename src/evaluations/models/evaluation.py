@@ -1,8 +1,6 @@
 import enum as PyEnum
-from datetime import date
 from typing import (
     TYPE_CHECKING,
-    List,
 )
 from uuid import UUID
 
@@ -17,12 +15,11 @@ from sqlalchemy.orm import (
     relationship,
 )
 
-from core.models import Base
+from core.models.base import Base
 
 if TYPE_CHECKING:
-    from teams.models import Team
-    from users.models import User
     from tasks.models import Task
+    from users.models import User
 
 
 class ScoresEnum(PyEnum.Enum):
@@ -51,23 +48,13 @@ class Evaluation(Base):
         Enum(ScoresEnum),
         nullable=False,
     )
-    comment: Mapped[str] = mapped_column(
-        String(200),
-        nullable=True
-    )
+    comment: Mapped[str] = mapped_column(String(200), nullable=True)
     evaluator: Mapped["User"] = relationship(
-        "User",
-        foreign_keys=[evaluator_uuid],
-        back_populates="given_evaluations"
+        "User", foreign_keys=[evaluator_uuid], back_populates="given_evaluations"
     )
     evaluated_user: Mapped["User"] = relationship(
-        "User",
-        foreign_keys=[evaluated_user_uuid],
-        back_populates="evaluations"
+        "User", foreign_keys=[evaluated_user_uuid], back_populates="evaluations"
     )
     task: Mapped["Task"] = relationship(
-        "Task",
-        foreign_keys=[task_uuid],
-        back_populates="evaluation"
+        "Task", foreign_keys=[task_uuid], back_populates="evaluation"
     )
-    
