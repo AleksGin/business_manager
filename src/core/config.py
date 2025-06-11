@@ -22,6 +22,10 @@ class DB_Config(BaseModel):
 class Auth(BaseModel):
     payload: str
     algorithm: str
+    
+
+class ApiPrefix(BaseModel):
+    user: str = "/user"
 
 
 class Config(BaseSettings):
@@ -33,6 +37,9 @@ class Config(BaseSettings):
     )
     db_config: DB_Config
     auth: Auth
+    api: ApiPrefix = ApiPrefix()
+    
+    
 
 
 settings = Config()
