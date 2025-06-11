@@ -72,7 +72,9 @@ class User(Base):
         back_populates="owner",
     )
     created_tasks: Mapped[List["Task"]] = relationship(
-        "Task", foreign_keys="Task.creator_uuid", back_populates="creator"
+        "Task",
+        foreign_keys="Task.creator_uuid",
+        back_populates="creator",
     )
     assigned_tasks: Mapped[List["Task"]] = relationship(
         "Task",
