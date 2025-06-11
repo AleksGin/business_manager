@@ -38,11 +38,17 @@ class Task(Base):
         default=StatusEnum.OPENED,
     )
     assignee_uuid: Mapped[UUID] = mapped_column(
-        ForeignKey("users.uuid", ondelete="SET NULL"),
+        ForeignKey(
+            "users.uuid",
+            ondelete="SET NULL",
+        ),
         nullable=True,
     )
     team_uuid: Mapped[UUID] = mapped_column(
-        ForeignKey("teams.uuid", ondelete="CASCADE"),
+        ForeignKey(
+            "teams.uuid",
+            ondelete="CASCADE",
+        ),
         nullable=False,
     )
     creator_uuid: Mapped[UUID] = mapped_column(
