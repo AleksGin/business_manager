@@ -2,11 +2,11 @@ __all__ = (
     "db_helper",
     "Base",
     "meeting_participants",
+    "User",
     "Evaluation",
     "Meeting",
     "Task",
     "Team",
-    "User",
 )
 
 from evaluations.models import Evaluation
