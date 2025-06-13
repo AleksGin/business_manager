@@ -68,10 +68,10 @@ class TeamInvite(BaseModel):
     )
 
     @model_validator(mode="after")
-    def validate_one_identifier(cls, values):
-        if not values.user_uuid and not values.user_email:
+    def validate_one_identifier(self) -> "TeamInvite":
+        if not self.user_uuid and not self.user_email:
             raise ValueError("Необходимо ввести почту пользователя ИЛИ uuid")
-        return values
+        return self
 
 
 class TeamRemoveMember(BaseModel):
