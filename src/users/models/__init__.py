@@ -1,5 +1,11 @@
 __all__ = (
     "User",
+    "RoleEnum",
+    "GenderEnum",
 )
 
-from .user import User
+from .user import (
+    GenderEnum,
+    RoleEnum,
+    User,
+)
