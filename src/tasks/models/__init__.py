@@ -1,5 +1,9 @@
 __all__ = (
     "Task",
+    "StatusEnum",
 )
 
-from .task import Task
+from .task import (
+    StatusEnum,
+    Task,
+)

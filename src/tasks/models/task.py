@@ -47,9 +47,9 @@ class Task(Base):
     team_uuid: Mapped[UUID] = mapped_column(
         ForeignKey(
             "teams.uuid",
-            ondelete="CASCADE",
+            ondelete="SET NULL",
         ),
-        nullable=False,
+        nullable=True,
     )
     creator_uuid: Mapped[UUID] = mapped_column(
         ForeignKey("users.uuid"),
