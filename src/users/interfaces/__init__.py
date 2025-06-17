@@ -3,7 +3,10 @@ __all__ = (
     "PasswordHasher",
     "UserValidator",
     "UUIDGenerator",
+    "UserActivationManager",
     "DBSession",
+    "RoleManager",
+    "TeamMembershipManager"
 )
 
 from .interfaces import (
@@ -12,4 +15,7 @@ from .interfaces import (
     UserRepository,
     UserValidator,
     UUIDGenerator,
+    UserActivationManager,
+    RoleManager,
+    TeamMembershipManager,
 )
