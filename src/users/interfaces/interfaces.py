@@ -132,13 +132,12 @@ class UserValidator(Protocol):
         Args:
             email: проверяемый email
             exclude_uuid: исключить пользователя с этим UUID из проверки
-                         (полезно при обновлении профиля)
         """
         ...
 
     @abstractmethod
     def validate_age(self, birth_date: date) -> bool:
-        """Проверить соответствие возраста минимальным требованиям (например, 16+ лет)"""
+        """Проверить соответствие возраста минимальным требованиям (минимальное требование -- 16 лет)"""
         ...
 
     @abstractmethod
@@ -163,7 +162,7 @@ class RoleManager(Protocol):
         Args:
             user_uuid: кому назначается роль
             role: назначаемая роль
-            assigned_by: кто назначает роль (для аудита)
+            assigned_by: кто назначает роль
         """
         ...
 
@@ -178,7 +177,7 @@ class RoleManager(Protocol):
 
         Args:
             user_uuid: у кого убирается роль
-            removed_by: кто убирает роль (для аудита)
+            removed_by: кто убирает роль
         """
         ...
 
@@ -207,7 +206,7 @@ class TeamMembershipManager(Protocol):
         Args:
             user_uuid: кого добавляем
             team_uuid: в какую команду
-            added_by: кто добавляет (для аудита)
+            added_by: кто добавляет
         """
         ...
 
@@ -224,7 +223,7 @@ class TeamMembershipManager(Protocol):
         Args:
             user_uuid: кого удаляем
             team_uuid: из какой команды
-            removed_by: кто удаляет (для аудита)
+            removed_by: кто удаляет
         """
         ...
 
@@ -289,7 +288,7 @@ class UserActivationManager(Protocol):
 
         Args:
             user_uuid: кого активируем
-            activated_by: кто активирует (для аудита)
+            activated_by: кто активирует
         """
         ...
 
@@ -304,7 +303,7 @@ class UserActivationManager(Protocol):
 
         Args:
             user_uuid: кого деактивируем
-            deactivated_by: кто деактивирует (для аудита)
+            deactivated_by: кто деактивирует
         """
         ...
 
