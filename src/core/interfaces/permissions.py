@@ -24,7 +24,7 @@ class PermissionValidator(Protocol):
         ...
 
     @abstractmethod
-    async def can_assign_user(
+    async def can_assign_role(
         self,
         actor: "User",
         target_user: "User",
