@@ -25,11 +25,11 @@ class UserValidatorService(UserValidator):
         exclude_uuid: UUID | None = None,
     ) -> bool:
         """
-        Проверить уникальной email
+        Проверить уникальность email
 
         Args:
-            email: проверяй email
-            exclude_uuid: исключение пользователя с этим UUID при проверке
+            email: проверяемый email
+            exclude_uuid: исключить пользователя с этим UUID при проверке
 
         """
 
@@ -54,7 +54,7 @@ class UserValidatorService(UserValidator):
         # Вычисляем возраст
         age = today.year - birth_date.year
 
-        # Корректируем, если день рождения еще не напустил в этом году
+        # Корректируем, если день рождения еще не наступил в этом году
         if (today.month, today.day) < (birth_date.month, birth_date.day):
             age -= 1
 
@@ -99,7 +99,7 @@ class UserValidatorService(UserValidator):
         return True
 
     def _has_sequential_chars(self, password: str) -> bool:
-        """Проверить наличие последовательных символов (123 abc, qwe)"""
+        """Проверить наличие последовательных символов (123, abc, qwe)"""
         sequences = [
             "0123456789",
             "abcdefghijklmnopqrstuvwxyz",
