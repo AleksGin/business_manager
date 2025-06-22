@@ -36,6 +36,7 @@ if TYPE_CHECKING:
     from meetings.models import Meeting
     from tasks.models import Task
     from teams.models import Team
+    from core.models import UserToken
 
 
 class User(Base):
@@ -98,4 +99,9 @@ class User(Base):
         "Evaluation",
         foreign_keys="Evaluation.evaluated_user_uuid",
         back_populates="evaluated_user",
+    )
+    tokens: Mapped[List["UserToken"]] = relationship(
+        "UserToken",
+        back_populates="user",
+        cascade="all, delete-orphan",
     )
