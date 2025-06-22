@@ -34,7 +34,7 @@ class UserToken(Base):
 
     user_uuid: Mapped[UUID] = mapped_column(
         ForeignKey("users.uuid", ondelete="CASCADE"),
-        nullable=True,
+        nullable=False,
         index=True,
     )
     token_hash: Mapped[str] = mapped_column(
@@ -57,7 +57,7 @@ class UserToken(Base):
         default=True,
         nullable=False,
     )
-    ip_adress: Mapped[str] = mapped_column(
+    ip_address: Mapped[str] = mapped_column(
         String(45),
         nullable=True,
     )
@@ -77,7 +77,7 @@ class UserToken(Base):
         return datetime.now() >= self.expires_at
 
     def is_valid(self) -> bool:
-        """Проверить валиден ли токен (активен или истек)"""
+        """Проверить валиден ли токен (активен или не истек)"""
         return self.is_active and not self.is_expired()
 
     def __repr__(self) -> str:
