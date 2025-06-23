@@ -3,8 +3,14 @@ __all__ = (
     "DBSession",
     "RoleManager",
     "UUIDGenerator",
+    "JWTServiceInterface",
+    "TokenRepository",
 )
 
+from .auth import (
+    JWTServiceInterface,
+    TokenRepository,
+)
 from .common import (
     DBSession,
     RoleManager,

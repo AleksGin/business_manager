@@ -15,7 +15,7 @@ from core.models.user_token import (
 )
 
 
-class JWTService(Protocol):
+class JWTServiceInterface(Protocol):
     """Интерфейс для работы с JWT токенами"""
 
     @abstractmethod
