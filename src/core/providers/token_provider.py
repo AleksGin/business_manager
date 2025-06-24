@@ -13,7 +13,7 @@ from core.models.user_token import (
 
 
 class TokenProvider(TokenRepository):
-    """Имплементация Token Repository"""
+    """Имплементация TokenRepository"""
 
     def __init__(self, session: AsyncSession):
         self._session = session
