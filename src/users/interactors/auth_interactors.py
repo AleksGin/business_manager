@@ -200,7 +200,7 @@ class VerifyEmailInteractor:
                 await self._db_session.commit()
                 return True
             else:
-                ValueError("Недействительный или истекший токен")
+                raise ValueError("Недействительный или истекший токен")
         except Exception:
             await self._db_session.rollback()
             raise
