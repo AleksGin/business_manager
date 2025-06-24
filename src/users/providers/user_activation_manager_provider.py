@@ -5,6 +5,7 @@ from datetime import (
 from uuid import UUID
 
 from core.interfaces import (
+    DBSession,
     JWTProviderInterface,
     TokenRepository,
 )
@@ -13,6 +14,7 @@ from users.interfaces.interfaces import (
     PasswordHasher,
     UserActivationManager,
     UserRepository,
+    UserValidator,
 )
 
 
@@ -25,6 +27,8 @@ class UserActivationManagerProvider(UserActivationManager):
         jwt_provider: JWTProviderInterface,
         token_repository: TokenRepository,
         password_hasher: PasswordHasher,
+        db_session: DBSession,
+        user_validator: UserValidator,
         verification_token_ttl_hours: int = 24,
         reset_token_ttl_hours: int = 1,
     ) -> None:
@@ -40,6 +44,8 @@ class UserActivationManagerProvider(UserActivationManager):
         self._jwt_provider = jwt_provider
         self._token_repository = token_repository
         self._password_hasher = password_hasher
+        self._db_session = db_session
+        self._user_validator = user_validator
         self._verification_ttl = timedelta(hours=verification_token_ttl_hours)
         self._reset_ttl = timedelta(hours=reset_token_ttl_hours)
 
@@ -83,7 +89,8 @@ class UserActivationManagerProvider(UserActivationManager):
 
         # Ищем токен в БД
         token_record = await self._token_repository.get_token_by_hash(
-            token_hash, TokenType.EMAIL_VERIFICATION
+            token_hash,
+            TokenType.EMAIL_VERIFICATION,
         )
 
         # Проверяем соответствие пользователя
@@ -138,7 +145,8 @@ class UserActivationManagerProvider(UserActivationManager):
 
         # Деактивируем старые токены сброса
         await self._token_repository.deactivate_user_tokens(
-            user.uuid, TokenType.PASSWORD_RESET
+            user.uuid,
+            TokenType.PASSWORD_RESET,
         )
 
         # Генерируем новый токен
@@ -161,6 +169,10 @@ class UserActivationManagerProvider(UserActivationManager):
         new_password: str,
     ) -> bool:
         """Подтвердить сброс пароля и установить новый"""
+        
+        # Валидация пароля
+        if not self._user_validator.validate_password_strength(new_password):
+            raise ValueError("Пароль не соответствует требованиям безопасности")
 
         # Хешируем токен для поиска
         token_hash = self._jwt_provider.hash_refresh_token(token)
