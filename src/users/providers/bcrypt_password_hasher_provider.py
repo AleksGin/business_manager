@@ -4,7 +4,7 @@ from core.config import BcryptSettings as bcrypt_settings
 from users.interfaces import PasswordHasher
 
 
-class BcryptPasswordHasherService(PasswordHasher):
+class BcryptPasswordHasherProvider(PasswordHasher):
     """Имплементация PasswordHasher (используется bcrypt)"""
 
     def __init__(

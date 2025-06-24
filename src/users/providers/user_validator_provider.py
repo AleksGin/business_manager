@@ -1,6 +1,5 @@
 import re
 from datetime import date
-from typing import Optional
 from uuid import UUID
 
 from users.interfaces import (
@@ -9,7 +8,7 @@ from users.interfaces import (
 )
 
 
-class UserValidatorService(UserValidator):
+class UserValidatorProvider(UserValidator):
     """Имплементация UserValidator: бизнес-валидация пользователей"""
 
     def __init__(self, user_repo: UserRepository) -> None:

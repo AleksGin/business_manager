@@ -6,7 +6,7 @@ from uuid import (
 from core.interfaces.common import UUIDGenerator
 
 
-class UUIDGeneratorService(UUIDGenerator):
+class UUIDGeneratorProvider(UUIDGenerator):
     """Имплементация UUIDGenerator"""
 
     def __call__(self) -> UUID:

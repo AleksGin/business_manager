@@ -15,11 +15,11 @@ import jwt
 from jwt import InvalidTokenError
 
 from core.config import settings
-from core.interfaces.auth import JWTServiceInterface
+from core.interfaces.auth import JWTProviderInterface
 
 
-class JWTService(JWTServiceInterface):
-    """Имплементация JWT сервиса"""
+class JWTProvider(JWTProviderInterface):
+    """Имплементация JWTProviderInterface"""
 
     def __init__(
         self,
@@ -238,7 +238,7 @@ class JWTService(JWTServiceInterface):
 
 
 # Глобальный экземпляр JWT сервиса
-jwt_service = JWTService(
+jwt_provider = JWTProvider(
     secret_key=settings.auth.secret_key,
     algorithm=settings.auth.algorithm,
     access_token_expire_minutes=settings.auth.access_token_expire_minutes,
