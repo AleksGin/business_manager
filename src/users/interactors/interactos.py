@@ -2,16 +2,20 @@ from datetime import date
 from typing import Optional
 from uuid import UUID
 
-from core.interfaces import PermissionValidator
-from users.interfaces import (
+from core.interfaces import (
     DBSession,
-    PasswordHasher,
+    PermissionValidator,
     RoleManager,
+    UUIDGenerator,
+)
+from teams.interfaces import (
     TeamMembershipManager,
+)
+from users.interfaces import (
+    PasswordHasher,
     UserActivationManager,
     UserRepository,
     UserValidator,
-    UUIDGenerator,
 )
 from users.models import (
     GenderEnum,
@@ -134,9 +138,11 @@ class CreateUserInteractor:
             await self._db_session.flush()
 
             # 5. Генерация токена верификации email
-            verification_token = await self._activate_manager.generate_verification_token(
+            verification_token = (
+                await self._activate_manager.generate_verification_token(
                     created_user.uuid
                 )
+            )
 
             await self._db_session.commit()
 
@@ -148,7 +154,7 @@ class CreateUserInteractor:
             raise
 
 
-class AuthenticateUserInteractor: 
+class AuthenticateUserInteractor:
     """Интерактор для аутентификации пользователя"""
 
     def __init__(

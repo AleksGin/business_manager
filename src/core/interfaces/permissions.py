@@ -1,6 +1,8 @@
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Protocol
-from uuid import UUID
+from typing import (
+    TYPE_CHECKING,
+    Protocol,
+)
 
 if TYPE_CHECKING:
     from meetings.models import Meeting
