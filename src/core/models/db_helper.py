@@ -31,7 +31,7 @@ class Db_Helper:
             expire_on_commit=False,
         )
 
-    async def enginge_dispose(self) -> None:
+    async def engine_dispose(self) -> None:
         await self.async_enginge.dispose()
 
     async def session_getter(self) -> AsyncGenerator[AsyncSession, None]:
