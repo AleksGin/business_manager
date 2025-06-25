@@ -12,7 +12,7 @@ from core.models.user_token import (
 )
 
 
-class TokenProvider(TokenRepository):
+class TokenRepositoryProvider(TokenRepository):
     """Имплементация TokenRepository"""
 
     def __init__(self, session: AsyncSession):
