@@ -8,6 +8,7 @@ __all__ = (
     "Meeting",
     "Task",
     "Team",
+    "TokenType",
 )
 
 from evaluations.models import Evaluation
@@ -19,4 +20,7 @@ from users.models import User
 from .associations import meeting_participants
 from .base import Base
 from .db_helper import db_helper
-from .user_token import UserToken
+from .user_token import (
+    TokenType,
+    UserToken,
+)
