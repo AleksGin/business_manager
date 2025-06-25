@@ -59,7 +59,7 @@ class CreateUserInteractor:
         user_repo: UserRepository,
         password_hasher: PasswordHasher,
         user_validator: UserValidator,
-        permission_validator: PermissionValidator,
+        permission_validator: Optional[PermissionValidator],
         uuid_generator: UUIDGenerator,
         db_session: DBSession,
         activate_manager: UserActivationManager,
@@ -72,7 +72,11 @@ class CreateUserInteractor:
         self._db_session = db_session
         self._activate_manager = activate_manager
 
-    async def __call__(self, actor_uuid: UUID, dto: CreateUserDTO) -> User:
+    async def __call__(
+        self,
+        actor_uuid: Optional[UUID],
+        dto: CreateUserDTO,
+    ) -> User:
         """
         Создание нового пользователя
 
@@ -83,7 +87,7 @@ class CreateUserInteractor:
         # 1. Самостоятельная регистрация
 
         try:
-            if actor_uuid is None:
+            if actor_uuid is None or self._permission_validator is None:
                 if dto.role != RoleEnum.EMPLOYEE:
                     raise PermissionError(
                         "При самостоятельной регистрации доступная роль только EMPLOYEE"
