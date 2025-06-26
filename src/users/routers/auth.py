@@ -127,6 +127,7 @@ async def register(
 @router.post(
     "/login",
     response_model=UserTokenResponse,
+    status_code=status.HTTP_200_OK,
 )
 async def login(
     credentials: UserLogin,
@@ -193,7 +194,7 @@ async def login(
         )
 
 
-@router.get("/logout")
+@router.get("/logout", status_code=status.HTTP_200_OK)
 async def logout(
     current_user: CurrentUserDep,
     session: SessionDep,
@@ -210,6 +211,7 @@ async def logout(
 @router.post(
     "/refresh",
     response_model=Dict,
+    status_code=status.HTTP_200_OK,
 )
 async def refresh_token(
     refresh_token: str,
@@ -314,5 +316,110 @@ async def change_password(
     except PermissionError as e:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e),
+        )
+
+
+@router.get("/me", response_model=UserResponse)
+async def get_current_user_info(current_user: CurrentUserDep) -> UserResponse:
+    """Получить информацию о текущем пользователе"""
+    return UserResponse.model_validate(current_user)
+
+
+@router.post(
+    "/request-password-reset",
+    status_code=status.HTTP_202_ACCEPTED,
+)
+async def request_password_reset(
+    email: str,
+    session: SessionDep,
+    activation_manager: UserActivationDep,
+) -> Dict[str, str]:
+    """Запрос на сброс пароля"""
+
+    reset_interactor = RequestPasswordResetInteractor(
+        activation_manager=activation_manager,
+        db_session=session,
+    )
+
+    try:
+        token = await reset_interactor(email)
+
+        # В реальном приложении здесь была бы отправка email
+        return {
+            "messsage": "Инструкция по сбросу пароля отправлены на email",
+            "token": token,
+        }
+
+    except Exception as e:
+        # Возвращаем общий ответ
+        return {"message": "Если email существует, инструкции будут отправлены"}
+
+
+@router.post("/confirm-password-reset", status_code=status.HTTP_200_OK)
+async def confirm_password_reset(
+    token: str,
+    new_password: str,
+    session: SessionDep,
+    activation_manager: UserActivationDep,
+) -> Dict[str, str]:
+    """Подтверждение сброс пароля"""
+
+    confirm_interactor = ConfirmPasswordResetInteractor(
+        activation_manager=activation_manager,
+        db_session=session,
+    )
+
+    try:
+        result = await confirm_interactor(
+            token,
+            new_password,
+        )
+
+        if not result:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Недействительный или истекший токен",
+            )
+
+        return {"message": "Пароль успешно изменен"}
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.post(
+    "verify-email",
+    status_code=status.HTTP_200_OK,
+)
+async def verify_email(
+    token: str,
+    current_user: CurrentUserDep,
+    session: SessionDep,
+    activation_manager: UserActivationDep,
+) -> Dict[str, str]:
+    """Подтверждение email"""
+
+    verify_interactor = VerifyEmailInteractor(
+        activation_manager=activation_manager, db_session=session
+    )
+
+    try:
+        result = await verify_interactor(current_user.uuid, token)
+
+        if not result:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Недействительный или истекший токен",
+            )
+
+        return {"messsage": "Email успешно подтвержден"}
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
