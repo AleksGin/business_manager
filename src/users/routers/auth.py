@@ -6,7 +6,6 @@ from fastapi import (
     Request,
     status,
 )
-from fastapi.responses import JSONResponse
 
 from core.dependencies import (
     CurrentUserDep,
