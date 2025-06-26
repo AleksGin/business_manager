@@ -31,6 +31,7 @@ class Team(Base):
     )
     owner: Mapped["User"] = relationship(
         "User",
+        foreign_keys=[owner_uuid],
         back_populates="owned_teams",
     )
     members: Mapped[List["User"]] = relationship(

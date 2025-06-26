@@ -70,6 +70,7 @@ class User(Base):
     )
     owned_teams: Mapped[List["Team"]] = relationship(
         "Team",
+        foreign_keys="Team.owner_uuid",
         back_populates="owner",
     )
     created_tasks: Mapped[List["Task"]] = relationship(
