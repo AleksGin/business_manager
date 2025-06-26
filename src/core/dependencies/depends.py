@@ -137,6 +137,7 @@ async def get_current_user_uuid(
     ],
 ) -> str:
     """Получить UUID текущего пользователя из JWT токена"""
+
     token = credentials.credentials
 
     user_uuid = jwt_provider.get_user_from_token(token)
