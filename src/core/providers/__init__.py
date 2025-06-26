@@ -4,6 +4,6 @@ __all__ = (
     "jwt_provider",
 )
 
-from providers.jwt_provider import jwt_provider
-from providers.token_provider import TokenRepositoryProvider
-from providers.uuid_generator_provider import UUIDGeneratorProvider
+from .jwt_provider import jwt_provider
+from .token_provider import TokenRepositoryProvider
+from .uuid_generator_provider import UUIDGeneratorProvider
