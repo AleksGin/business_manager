@@ -62,8 +62,8 @@ class JWTProvider(JWTProviderInterface):
             "sub": str(user_uuid),
             "role": user_role,
             "type": "access",
-            "iat": now,
-            "exp": expire,
+            "iat": int(now.timestamp()),
+            "exp": int(expire.timestamp()),
             "jti": secrets.token_hex(16),
         }
 
