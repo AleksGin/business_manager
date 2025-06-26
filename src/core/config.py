@@ -53,6 +53,7 @@ class Config(BaseSettings):
     auth: Auth
     api_prefix: ApiPrefix = ApiPrefix()
     app_config: AppConfigure = AppConfigure()
+    bcrypt_settings: BcryptSettings = BcryptSettings()
 
 
 settings = Config()
