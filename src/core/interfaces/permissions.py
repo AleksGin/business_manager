@@ -53,6 +53,11 @@ class PermissionValidator(Protocol):
         """Есть ли возможность у actor обновлять информацию пользователя"""
         ...
 
+    @abstractmethod
+    async def can_view_users_without_team(self, actor: "User") -> bool:
+        """Есть ли возможность у actor просматривать пользователей без команды"""
+        ...
+
     # ========== TEAM PERMISSIONS ==========
 
     @abstractmethod
@@ -104,6 +109,14 @@ class PermissionValidator(Protocol):
     ) -> bool:
         """Есть ли возможность у actor удалять участников из команды"""
         ...
+
+    @abstractmethod
+    async def can_view_team_members(
+        self,
+        actor: "User",
+        team: "Team",
+    ) -> bool:
+        """Есть ли возможность у actor просматривать участников команды"""
 
     # ========== TASK PERMISSIONS ==========
 
