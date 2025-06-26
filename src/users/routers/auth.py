@@ -109,6 +109,7 @@ async def register(
 
         return UserTokenResponse(
             access_token=tokens["access_token"],
+            refresh_token=tokens["refresh_token"],
             user=UserResponse.model_validate(user),
         )
 
@@ -184,6 +185,7 @@ async def login(
 
         return UserTokenResponse(
             access_token=tokens["access_token"],
+            refresh_token=tokens["refresh_token"],
             user=UserResponse.model_validate(user),
         )
 
@@ -237,7 +239,7 @@ async def refresh_token(
         )
 
     # Получаем пользователя
-    user = await user_repo.get_by_uuid(token_record.uuid)
+    user = await user_repo.get_by_uuid(token_record.user_uuid)
     if not user or not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -356,7 +358,10 @@ async def request_password_reset(
         return {"message": "Если email существует, инструкции будут отправлены"}
 
 
-@router.post("/confirm-password-reset", status_code=status.HTTP_200_OK)
+@router.post(
+    "/confirm-password-reset",
+    status_code=status.HTTP_200_OK,
+)
 async def confirm_password_reset(
     token: str,
     new_password: str,
@@ -392,7 +397,39 @@ async def confirm_password_reset(
 
 
 @router.post(
-    "verify-email",
+    "/request-email-verification",
+    status_code=status.HTTP_202_ACCEPTED,
+)
+async def request_email_verification(
+    current_user: CurrentUserDep,
+    session: SessionDep,
+    activation_manager: UserActivationDep,
+):
+    """
+    Запросить повторную отправку токена для верификации
+    *Сделано для теста API, на самом деле запрос на подтверждение email отправляется при регистрации*
+    """
+
+    if current_user.is_verified:
+        return {"message": "Email уже подтвержден"}
+
+    try:
+        verification_token = await activation_manager.generate_verification_token(
+            current_user.uuid
+        )
+        await session.commit()
+
+        return {
+            "message": "Токен верификации отправлен на email",
+            "verification_token": verification_token,
+        }
+
+    except Exception as e:
+        return {"message:Не удалось отправить токен верификации"}
+
+
+@router.post(
+    "/verify-email",
     status_code=status.HTTP_200_OK,
 )
 async def verify_email(
@@ -404,11 +441,15 @@ async def verify_email(
     """Подтверждение email"""
 
     verify_interactor = VerifyEmailInteractor(
-        activation_manager=activation_manager, db_session=session
+        activation_manager=activation_manager,
+        db_session=session,
     )
 
     try:
-        result = await verify_interactor(current_user.uuid, token)
+        result = await verify_interactor(
+            current_user.uuid,
+            token,
+        )
 
         if not result:
             raise HTTPException(
