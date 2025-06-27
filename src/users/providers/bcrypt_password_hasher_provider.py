@@ -1,6 +1,6 @@
 import bcrypt
 
-from core.config import BcryptSettings as bcrypt_settings
+from core.config import settings
 from users.interfaces import PasswordHasher
 
 
@@ -9,7 +9,7 @@ class BcryptPasswordHasherProvider(PasswordHasher):
 
     def __init__(
         self,
-        rounds: int = bcrypt_settings.default_rounds_value,
+        rounds: int = settings.bcrypt_settings.default_rounds_value,
     ) -> None:
         """
         Args:

@@ -22,7 +22,7 @@ class ChangePasswordInteractor:
         user_repo: UserRepository,
         password_hasher: PasswordHasher,
         user_validator: UserValidator,
-        permission_validator: PermissionValidator,
+        permission_validator: Optional[PermissionValidator],
         db_session: DBSession,
     ) -> None:
         self._user_repo = user_repo
@@ -51,7 +51,7 @@ class ChangePasswordInteractor:
                 raise ValueError("Целевой пользователь не найден")
 
             # 2. Проверить права доступа (либо сам пользователь, либо админ)
-            if actor.uuid != target.uuid:
+            if actor.uuid != target.uuid and self._permission_validator is not None:
                 if not await self._permission_validator.is_system_admin(actor):
                     raise PermissionError("Нет прав для смены пароля")
 
@@ -200,7 +200,7 @@ class VerifyEmailInteractor:
                 await self._db_session.commit()
                 return True
             else:
-                ValueError("Недействительный или истекший токен")
+                raise ValueError("Недействительный или истекший токен")
         except Exception:
             await self._db_session.rollback()
             raise

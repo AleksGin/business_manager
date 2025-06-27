@@ -5,8 +5,14 @@ from pydantic_settings import (
 )
 
 
-class BcryptSettings:
+class BcryptSettings(BaseModel):
     default_rounds_value: int = 12
+
+
+class AppConfigure(BaseModel):
+    host: str = "0.0.0.0"
+    port: int = 8000
+    reload_mode: bool = True
 
 
 class DB_Config(BaseModel):
@@ -32,7 +38,8 @@ class Auth(BaseModel):
 
 
 class ApiPrefix(BaseModel):
-    user: str = "/user"
+    user: str = "/api/users"
+    auth: str = "/api/auth"
 
 
 class Config(BaseSettings):
@@ -44,7 +51,9 @@ class Config(BaseSettings):
     )
     db_config: DB_Config
     auth: Auth
-    api: ApiPrefix = ApiPrefix()
+    api_prefix: ApiPrefix = ApiPrefix()
+    app_config: AppConfigure = AppConfigure()
+    bcrypt_settings: BcryptSettings = BcryptSettings()
 
 
 settings = Config()
