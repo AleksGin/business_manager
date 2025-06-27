@@ -1,5 +1,9 @@
 __all__ = (
     "Evaluation",
+    "ScoresEnum",
 )
 
-from .evaluation import Evaluation
+from .evaluation import (
+    Evaluation,
+    ScoresEnum,
+)
