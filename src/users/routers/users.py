@@ -21,16 +21,16 @@ from core.dependencies.depends import (
     UserValidatorDep,
     UUIDGeneratorDep,
 )
+from users.models import RoleEnum
 from users.interactors.user_interactos import (
     CreateUserDTO,
     CreateUserInteractor,
     DeleteUserInteractor,
     GetUserInteractor,
     GetUsersWithoutTeamInteractor,
+    QueryUserInteractor,
     UpdateUserInteractor,
-    GetListUsersInteractor,
 )
-from users.models import RoleEnum
 from users.schemas.user import (
     UserCreate,
     UserInTeam,
@@ -110,7 +110,7 @@ async def list_users(
 ) -> List[UserInTeam]:
     """Получить список пользователей"""
 
-    get_list_users_interactor = GetListUsersInteractor(
+    get_list_users_interactor = QueryUserInteractor(
         user_repo=user_repo,
         permission_validator=None,
     )
@@ -272,16 +272,17 @@ async def search_users(
 ) -> List[UserInTeam]:
     """Поиск пользователей"""
 
-    # Обычные пользователи могут искать только в своей команде
-    if current_user.role == RoleEnum.EMPLOYEE:
-        team_uuid = current_user.team_uuid
-        exclude_team = False
+    search_user_interactor = QueryUserInteractor(
+        user_repo=user_repo,
+        permission_validator=None,
+    )
 
-    users = await user_repo.search_users(
-        query=q,
-        team_uuid=team_uuid,
-        exclude_team=exclude_team,
+    users = await search_user_interactor(
+        actor_uuid=current_user.uuid,
         limit=limit,
+        team_uuid=team_uuid,
+        search_query=q,
+        exclude_team=exclude_team,
     )
 
     return [UserInTeam.model_validate(user) for user in users]
@@ -324,3 +325,19 @@ async def get_users_without_team(
             status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
+
+
+# TODO УДАЛИТЬ ЭТОТ ЭНДПОИНТ
+@router.post("/make-first-admin")
+async def make_admin(
+    current_user: CurrentUserDep,
+    session: SessionDep,
+    user_repo: UserRepoDep,
+):
+    """Сделать первого админа"""
+
+    current_user.role = RoleEnum.ADMIN
+    await user_repo.update_user(current_user)
+    await session.commit()
+
+    return {"message": f"Вы теперь администратор {current_user.email}"}

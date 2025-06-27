@@ -336,6 +336,9 @@ class UpdateUserInteractor:
                     ):
                         raise PermissionError("Нет прав для назначение этой роли")
                     target.role = update_data.role
+            # TODO УДАЛИТЬ КОД НИЖЕ
+            if actor.role == RoleEnum.ADMIN and update_data.role is not None:
+                target.role = update_data.role
 
             if update_data.team_uuid is not None:
                 target.team_uuid = update_data.team_uuid
@@ -505,7 +508,7 @@ class JoinTeamByCode:
             raise
 
 
-class GetListUsersInteractor:
+class QueryUserInteractor:
     """Интерактор для получения списка пользователей с проверкой прав доступа"""
 
     def __init__(
@@ -522,6 +525,8 @@ class GetListUsersInteractor:
         limit: int = 50,
         offset: int = 0,
         team_uuid: Optional[UUID] = None,
+        search_query: Optional[str] = None,
+        exclude_team: bool = False,
     ) -> List[User]:
         """
         Получить список пользователей с проверкой прав доступа
@@ -541,18 +546,33 @@ class GetListUsersInteractor:
             raise ValueError("Пользователь не найден")
 
         # 2. Определить права доступа и применить фильтрацию
-        final_team_uuid = await self._determine_team_filter(actor, team_uuid)
+        final_team_uuid = await self._determine_team_filter(
+            actor,
+            team_uuid,
+        )
 
         # 3. Проверить права на просмотр конкретной команды (если указана)
         if final_team_uuid and final_team_uuid != actor.team_uuid:
-            await self._check_team_access_permission(actor, final_team_uuid)
+            await self._check_team_access_permission(
+                actor,
+                final_team_uuid,
+            )
 
-        # 4. Получить список пользователей
-        users = await self._user_repo.list_users(
-            limit=limit,
-            offset=offset,
-            team_uuid=final_team_uuid,
-        )
+        if search_query:
+            # 4. Поиск
+            users = await self._user_repo.search_users(
+                query=search_query,
+                team_uuid=final_team_uuid,
+                exclude_team=exclude_team,
+                limit=limit,
+            )
+        else:
+            # 4. Получить список пользователей
+            users = await self._user_repo.list_users(
+                limit=limit,
+                offset=offset,
+                team_uuid=final_team_uuid,
+            )
 
         return users
 
