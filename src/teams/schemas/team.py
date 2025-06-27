@@ -80,3 +80,8 @@ class TeamRemoveMember(BaseModel):
 
 class TeamTransferOwnership(BaseModel):
     new_owner_uuid: UUID = Field(description="UUID нового владельца команды")
+
+class TeamInviteResponse(BaseModel):
+    message: str
+    invite_code: str
+    expires_in_hours: int

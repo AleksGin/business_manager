@@ -1,8 +1,75 @@
 from abc import abstractmethod
 from typing import (
+    List,
+    Optional,
     Protocol,
 )
 from uuid import UUID
+
+from teams.models import Team
+
+
+class TeamRepository(Protocol):
+    """Интерфейс для работы с командами в хранилище данных"""
+
+    @abstractmethod
+    async def create_team(self, team: Team) -> Team:
+        """Создать новую команду"""
+        ...
+
+    @abstractmethod
+    async def get_by_uuid(self, team_uuid: UUID) -> Optional[Team]:
+        """Получить команду по UUID"""
+        ...
+
+    @abstractmethod
+    async def get_by_name(self, name: str) -> Optional[Team]:
+        """Получить команду по названию"""
+        ...
+
+    @abstractmethod
+    async def update_team(self, team: Team) -> Team:
+        """Обновить команду"""
+        ...
+
+    @abstractmethod
+    async def delete_team(self, team_uuid: UUID) -> bool:
+        """Удалить команду"""
+        ...
+
+    @abstractmethod
+    async def get_user_teams(self, user_uuid: UUID) -> List[Team]:
+        """Получить команды, где пользователь является владельцем"""
+        ...
+
+    @abstractmethod
+    async def list_teams(
+        self,
+        limit: int = 50,
+        offset: int = 0,
+        owner_uuid: Optional[UUID] = None,
+    ) -> List[Team]:
+        """Получить список команд с пагинацией и фильтрацией"""
+        ...
+
+    @abstractmethod
+    async def exists_by_name(self, name: str) -> bool:
+        """Проверить существование команды по названию"""
+        ...
+
+    @abstractmethod
+    async def get_team_with_members(self, team_uuid: UUID) -> Optional[Team]:
+        """Получить команду с загруженными участниками"""
+        ...
+
+    @abstractmethod
+    async def search_teams(
+        self,
+        query: str,
+        limit: int = 50,
+    ) -> List[Team]:
+        """Поиск команд по названию или описанию"""
+        ...
 
 
 class TeamMembershipManager(Protocol):

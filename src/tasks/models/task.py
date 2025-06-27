@@ -1,6 +1,9 @@
 import enum as PyEnum
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import (
+    TYPE_CHECKING,
+    Optional,
+)
 from uuid import UUID
 
 from sqlalchemy import (
@@ -37,7 +40,7 @@ class Task(Base):
         nullable=False,
         default=StatusEnum.OPENED,
     )
-    assignee_uuid: Mapped[UUID] = mapped_column(
+    assignee_uuid: Mapped[Optional[UUID]] = mapped_column(
         ForeignKey(
             "users.uuid",
             ondelete="SET NULL",

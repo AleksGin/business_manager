@@ -101,3 +101,15 @@ class UserChangePassword(BaseModel):
         max_length=80,
         description="Новый пароль (минимум 10 символов)",
     )
+
+
+class UserAssignRole(BaseModel):
+    role: RoleEnum = Field(description="Назначаемая роль")
+
+
+class UserJoinTeam(BaseModel):
+    invite_code: str = Field(
+        min_length=6,
+        max_length=50,
+        description="Код приглашения в команду",
+    )

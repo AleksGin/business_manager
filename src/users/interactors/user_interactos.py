@@ -405,18 +405,18 @@ class DeleteUserInteractor:
             raise
 
 
-class AssignRoleInteractor:
-    """Интерактор для назначения роли пользователю"""
+class JoinTeamByCodeInteractor:
+    """Интерактор для присоединения к команде по коду"""
 
     def __init__(
         self,
         user_repo: UserRepository,
-        role_manager: RoleManager,
-        permission_validator: PermissionValidator,
+        team_membership_manager: TeamMembershipManager,
+        permission_validator: Optional[PermissionValidator],
         db_session: DBSession,
     ) -> None:
         self._user_repo = user_repo
-        self._role_manager = role_manager
+        self._team_membership_manager = team_membership_manager
         self._permission_validator = permission_validator
         self._db_session = db_session
 
@@ -424,83 +424,39 @@ class AssignRoleInteractor:
         self,
         actor_uuid: UUID,
         target_uuid: UUID,
-        new_role: RoleEnum,
+        invite_code: str,
     ) -> bool:
-        """Назначить роль пользователю"""
+        """Присоединиться к команде по коду приглашения"""
 
         try:
-            # 1. Получение пользователей
-
+            # 1. Найти участников
             actor = await self._user_repo.get_by_uuid(actor_uuid)
             target = await self._user_repo.get_by_uuid(target_uuid)
 
             if not actor:
-                raise ValueError("Пользователь actor не найден")
+                raise ValueError("Пользователь-инициатор не найден")
             if not target:
-                raise ValueError("Пользователь для назначения роли не найден")
-
-            # 2. Проверка прав для смены роли
-
-            if not await self._permission_validator.can_assign_role(
-                actor,
-                target,
-                new_role.value,
-            ):
-                raise PermissionError("Нет прав для назначения роли")
-
-            # 3. Назначить роль
-
-            result = await self._role_manager.assign_role(
-                target_uuid,
-                new_role,
-                actor_uuid,
-            )
-
-            if result:
-                await self._db_session.commit()
-
-            return result
-
-        except Exception:
-            await self._db_session.rollback()
-            raise
-
-
-class JoinTeamByCode:
-    """Интерактор для присоединения к команде по коду"""
-
-    def __init__(
-        self,
-        user_repo: UserRepository,
-        team_membership_manager: TeamMembershipManager,
-        db_session: DBSession,
-    ) -> None:
-        self._user_repo = user_repo
-        self._team_membership_manager = team_membership_manager
-        self._db_session = db_session
-
-    async def __call__(
-        self,
-        user_uuid: UUID,
-        invite_code: str,
-    ) -> bool:
-        """Присоединиться к команду по коду приглашения"""
-
-        try:
-            # 1. Проверить существование пользователя
-            user = await self._user_repo.get_by_uuid(user_uuid)
-
-            if not user:
                 raise ValueError("Пользователь не найден")
 
-            # 2. Присоединиться к команде
+            # 2. Проверить права доступа
+            is_self_action = target.uuid == actor.uuid
+            is_admin = actor.role == RoleEnum.ADMIN
+
+            if not is_self_action and not is_admin:
+                raise PermissionError("Вы можете присоединить только себя к команде")
+
+            # 3. Бизнес-правила
+            if target.team_uuid:
+                raise ValueError("Пользователь уже состоит в команде")
+
+            # 4. Присоединиться к команде
+
             result = await self._team_membership_manager.join_team_by_code(
-                user_uuid,
+                target.uuid,
                 invite_code,
             )
             if result:
                 await self._db_session.commit()
-
             return result
 
         except Exception:
@@ -630,3 +586,246 @@ class QueryUserInteractor:
         else:
             if actor.role == RoleEnum.EMPLOYEE:
                 raise PermissionError("Нет прав для просмотра других команд")
+
+
+class AssignRoleInteractor:
+    """Интерактор для назначения роли пользователю"""
+
+    def __init__(
+        self,
+        user_repo: UserRepository,
+        permission_validator: Optional[PermissionValidator],
+        db_session: DBSession,
+    ) -> None:
+        self._user_repo = user_repo
+        self._permission_validator = permission_validator
+        self._db_session = db_session
+
+    async def __call__(
+        self,
+        actor_uuid: UUID,
+        target_uuid: UUID,
+        new_role: RoleEnum,
+    ) -> bool:
+        """Назначить роль пользователю"""
+
+        try:
+            # 1. Найти участников
+            actor = await self._user_repo.get_by_uuid(actor_uuid)
+            target = await self._user_repo.get_by_uuid(target_uuid)
+
+            if not actor:
+                raise ValueError("Пользователь-назначающий не найден")
+            if not target:
+                raise ValueError("Пользователь для назначения роли не найден")
+
+            # 2. Проверить права доступа
+            if self._permission_validator:
+                if not await self._permission_validator.can_assign_role(
+                    actor,
+                    target,
+                    new_role.value,
+                ):
+                    raise PermissionError("Нет прав для назначения роли")
+            else:
+                # Временная простая проверка до реализации PermissionValidator
+                if actor.role != RoleEnum.ADMIN:
+                    raise PermissionError("Только администраторы могут назначать роли")
+
+            # 3. Бизнес-правила
+            if target.uuid == actor.uuid and new_role == RoleEnum.EMPLOYEE:
+                raise ValueError("Администратор не может понизить себя до EMPLOYEE")
+
+            # 4. Назначить роль
+            target.role = new_role
+            await self._user_repo.update_user(target)
+            await self._db_session.commit()
+
+            return True
+
+        except Exception:
+            await self._db_session.rollback()
+            raise
+
+
+class RemoveRoleInteractor:
+    """Интерактор для убирания роли пользователя (делает EMPLOYEE)"""
+
+    def __init__(
+        self,
+        user_repo: UserRepository,
+        permission_validator: Optional[PermissionValidator],
+        db_session: DBSession,
+    ) -> None:
+        self._user_repo = user_repo
+        self._permission_validator = permission_validator
+        self._db_session = db_session
+
+    async def __call__(
+        self,
+        actor_uuid: UUID,
+        target_uuid: UUID,
+    ) -> bool:
+        """Убрать роль пользователя (сделать EMPLOYEE)"""
+
+        try:
+            # 1. Найти участников
+            actor = await self._user_repo.get_by_uuid(actor_uuid)
+            target = await self._user_repo.get_by_uuid(target_uuid)
+
+            if not actor:
+                raise ValueError("Пользователь-назначающий не найден")
+            if not target:
+                raise ValueError("Пользователь не найден")
+
+            # 2. Проверить права доступа
+            if self._permission_validator:
+                if not await self._permission_validator.can_assign_role(
+                    actor,
+                    target,
+                    RoleEnum.EMPLOYEE.value,
+                ):
+                    raise PermissionError("Нет прав для изменения роли")
+            else:
+                # Временная простая проверка
+                if actor.role != RoleEnum.ADMIN:
+                    raise PermissionError("Только администраторы могут убирать роли")
+
+            # 3. Бизнес-правила
+            if target.uuid == actor.uuid:
+                raise ValueError("Нельзя убрать роль у самого себя")
+
+            # 4. Убрать роль
+            target.role = RoleEnum.EMPLOYEE
+            await self._user_repo.update_user(target)
+            await self._db_session.commit()
+
+            return True
+
+        except Exception:
+            await self._db_session.rollback()
+            raise
+
+
+class LeaveTeamInteractor:
+    """Интерактор для выхода из команды"""
+
+    def __init__(
+        self,
+        user_repo: UserRepository,
+        permission_validator: Optional[PermissionValidator],
+        db_session: DBSession,
+    ) -> None:
+        self._user_repo = user_repo
+        self._permission_validator = permission_validator
+        self._db_session = db_session
+
+    async def __call__(
+        self,
+        actor_uuid: UUID,
+        target_uuid: UUID,
+    ) -> bool:
+        """Покинуть команду"""
+
+        try:
+            # 1. Найти участников
+            actor = await self._user_repo.get_by_uuid(actor_uuid)
+            target = await self._user_repo.get_by_uuid(target_uuid)
+
+            if not actor:
+                raise ValueError("Пользователь-инициатор не найден")
+            if not target:
+                raise ValueError("Пользователь не найден")
+
+            # 2. Проверить права доступа
+            is_self_action = target.uuid == actor.uuid
+            is_admin = actor.role == RoleEnum.ADMIN
+
+            if not is_self_action and not is_admin:
+                if self._permission_validator:
+                    # TODO: Добавить проверку через PermissionValidator
+                    pass
+                raise PermissionError("Вы можете удалить из команды только себя")
+
+            # 3. Бизнес-правила
+            if not target.team_uuid:
+                raise ValueError("Пользователь не состоит в команде")
+
+            # TODO: Проверить, не является ли пользователь владельцем команды
+            # (эта проверка будет добавлена когда реализуем Teams)
+
+            # 4. Покинуть команду
+            target.team_uuid = None
+            await self._user_repo.update_user(target)
+            await self._db_session.commit()
+
+            return True
+
+        except Exception:
+            await self._db_session.rollback()
+            raise
+
+
+class GetUserStatsInteractor:
+    """Интерактор для получения статистики пользователя"""
+
+    def __init__(
+        self,
+        user_repo: UserRepository,
+        permission_validator: Optional[PermissionValidator],
+    ) -> None:
+        self._user_repo = user_repo
+        self._permission_validator = permission_validator
+
+    async def __call__(
+        self,
+        actor_uuid: UUID,
+        target_uuid: UUID,
+    ) -> dict:
+        """Получить статистику пользователя"""
+
+        # 1. Найти участников
+        actor = await self._user_repo.get_by_uuid(actor_uuid)
+        target = await self._user_repo.get_by_uuid(target_uuid)
+
+        if not actor:
+            raise ValueError("Пользователь-запрашивающий не найден")
+        if not target:
+            raise ValueError("Пользователь не найден")
+
+        # 2. Проверить права доступа
+        if self._permission_validator:
+            if not await self._permission_validator.can_view_user(actor, target):
+                raise PermissionError("Нет прав для просмотра статистики")
+        else:
+            # Временная простая проверка
+            is_self = target.uuid == actor.uuid
+            is_manager_or_admin = actor.role in [RoleEnum.ADMIN, RoleEnum.MANAGER]
+
+            if not is_self and not is_manager_or_admin:
+                raise PermissionError("Нет прав для просмотра статистики")
+
+        # 3. Собрать статистику
+        return {
+            "user_uuid": str(target.uuid),
+            "email": target.email,
+            "name": f"{target.name} {target.surname}",
+            "role": target.role.value if target.role else "EMPLOYEE",
+            "is_active": target.is_active,
+            "is_verified": target.is_verified,
+            "team_uuid": str(target.team_uuid) if target.team_uuid else None,
+            "created_at": target.created_at.isoformat(),
+            # Заглушки для статистики (заполним после реализации Tasks и Evaluations)
+            "tasks_stats": {
+                "total_assigned": 0,
+                "completed": 0,
+                "in_progress": 0,
+                "overdue": 0,
+            },
+            "evaluation_stats": {
+                "average_score": 0.0,
+                "total_evaluations": 0,
+                "last_evaluation": None,
+            },
+            "meetings_stats": {"upcoming": 0, "total_participated": 0},
+        }

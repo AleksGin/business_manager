@@ -23,6 +23,18 @@ from core.models.db_helper import db_helper
 from core.providers.jwt_provider import jwt_provider
 from core.providers.token_provider import TokenRepositoryProvider
 from core.providers.uuid_generator_provider import UUIDGeneratorProvider
+from evaluations.crud import EvaluationCRUD
+from evaluations.interfaces import EvaluationRepository
+from meetings.crud import MeetingCRUD
+from meetings.interfaces import MeetingRepository
+from tasks.crud import TaskCRUD
+from tasks.interfaces import TaskRepository
+from teams.crud import TeamCRUD
+from teams.interfaces import (
+    TeamMembershipManager,
+    TeamRepository,
+)
+from teams.providers import TeamMembershipManagerProvider
 from users.crud import UserCRUD
 from users.interfaces import (
     PasswordHasher,
@@ -207,3 +219,104 @@ UserActivationDep = Annotated[
 ]
 UUIDGeneratorDep = Annotated[UUIDGenerator, Depends(get_uuid_generator)]
 CurrentUserDep = Annotated[User, Depends(get_current_active_user)]
+
+
+# === Зависимости репозиториев Teams ===
+
+
+def get_team_repository(
+    session: Annotated[
+        AsyncSession,
+        Depends(get_session),
+    ],
+) -> TeamRepository:
+    """Получить репозиторий команд"""
+    return TeamCRUD(session)
+
+
+# === Зависимости провайдеров Teams ===
+
+
+def get_team_membership_manager(
+    team_repo: Annotated[
+        TeamRepository,
+        Depends(get_team_repository),
+    ],
+    user_repo: Annotated[
+        UserRepository,
+        Depends(get_user_repository),
+    ],
+    session: Annotated[
+        AsyncSession,
+        Depends(get_session),
+    ],
+) -> TeamMembershipManager:
+    """Получить менеджер управления участниками команд"""
+    return TeamMembershipManagerProvider(
+        team_repo=team_repo,
+        user_repo=user_repo,
+        db_session=session,
+    )
+
+
+# === Типы для аннотаций Teams ===
+
+TeamRepoDep = Annotated[TeamRepository, Depends(get_team_repository)]
+TeamMembershipDep = Annotated[
+    TeamMembershipManager,
+    Depends(get_team_membership_manager),
+]
+
+
+# === Зависимости репозиториев Tasks ===
+
+
+def get_task_repository(
+    session: Annotated[
+        AsyncSession,
+        Depends(get_session),
+    ],
+) -> TaskRepository:
+    """Получить репозиторий задач"""
+    return TaskCRUD(session)
+
+
+# === Типы для аннотаций Tasks ===
+
+TaskRepoDep = Annotated[TaskRepository, Depends(get_task_repository)]
+
+
+# === Зависимости репозиториев Evaluations ===
+
+
+def get_evaluation_repository(
+    session: Annotated[
+        AsyncSession,
+        Depends(get_session),
+    ],
+) -> EvaluationRepository:
+    """Получить репозиторий оценок"""
+    return EvaluationCRUD(session)
+
+
+# === Типы для аннотаций Evaluations ===
+
+EvaluationRepoDep = Annotated[EvaluationRepository, Depends(get_evaluation_repository)]
+
+
+# === Зависимости репозиториев Meetings ===
+
+
+def get_meeting_repository(
+    session: Annotated[
+        AsyncSession,
+        Depends(get_session),
+    ],
+) -> MeetingRepository:
+    """Получить репозиторий встреч"""
+    return MeetingCRUD(session)
+
+
+# === Типы для аннотаций Meetings ===
+
+MeetingRepoDep = Annotated[MeetingRepository, Depends(get_meeting_repository)]

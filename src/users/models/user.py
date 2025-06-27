@@ -3,6 +3,7 @@ from datetime import date
 from typing import (
     TYPE_CHECKING,
     List,
+    Optional,
 )
 from uuid import UUID
 
@@ -56,7 +57,7 @@ class User(Base):
         Enum(RoleEnum),
         nullable=True,
     )
-    team_uuid: Mapped[UUID] = mapped_column(
+    team_uuid: Mapped[Optional[UUID]] = mapped_column(
         ForeignKey(
             "teams.uuid",
             ondelete="SET NULL",
