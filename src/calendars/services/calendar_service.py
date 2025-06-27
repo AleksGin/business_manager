@@ -1,9 +1,5 @@
 import calendar as python_calendar
-from datetime import datetime, timedelta
-from typing import List, Optional
-from uuid import UUID
-
-from calendar.schemas import (
+from calendars.schemas.calendar import (
     CalendarDay,
     CalendarEvent,
     CalendarFilter,
@@ -14,6 +10,16 @@ from calendar.schemas import (
     EventPriority,
     EventType,
 )
+from datetime import (
+    datetime,
+    timedelta,
+)
+from typing import (
+    List,
+    Optional,
+)
+from uuid import UUID
+
 from meetings.interfaces import MeetingRepository
 from tasks.interfaces import TaskRepository
 from tasks.models import StatusEnum
@@ -195,20 +201,31 @@ class CalendarService:
         next_week_end = next_week_start + timedelta(days=7) - timedelta(seconds=1)
 
         # 3. Применить фильтры
-        final_filter = await self._apply_permissions_to_filter(actor, calendar_filter)
+        final_filter = await self._apply_permissions_to_filter(
+            actor,
+            calendar_filter,
+        )
 
         # 4. Получить события по периодам
         today_events = await self._get_events_for_period(
-            today_start, today_end, final_filter
+            today_start,
+            today_end,
+            final_filter,
         )
         tomorrow_events = await self._get_events_for_period(
-            tomorrow_start, tomorrow_end, final_filter
+            tomorrow_start,
+            tomorrow_end,
+            final_filter,
         )
         week_events = await self._get_events_for_period(
-            week_start, week_end, final_filter
+            week_start,
+            week_end,
+            final_filter,
         )
         next_week_events = await self._get_events_for_period(
-            next_week_start, next_week_end, final_filter
+            next_week_start,
+            next_week_end,
+            final_filter,
         )
 
         # Просроченные события
@@ -243,10 +260,17 @@ class CalendarService:
             raise ValueError("Пользователь не найден")
 
         # 2. Применить фильтры
-        final_filter = await self._apply_permissions_to_filter(actor, calendar_filter)
+        final_filter = await self._apply_permissions_to_filter(
+            actor,
+            calendar_filter,
+        )
 
         # 3. Получить события
-        events = await self._get_events_for_period(start_date, end_date, final_filter)
+        events = await self._get_events_for_period(
+            start_date,
+            end_date,
+            final_filter,
+        )
 
         # 4. Вычислить статистику
         events_by_type = {event_type: 0 for event_type in EventType}
@@ -396,7 +420,14 @@ class CalendarService:
         """Применить права доступа к фильтру"""
 
         if not calendar_filter:
-            calendar_filter = CalendarFilter()
+            calendar_filter = CalendarFilter(
+                team_uuid=None,
+                user_uuid=None,
+                event_types=None,
+                include_completed=True,
+                include_overdue=True,
+                priority_filter=None,
+            )
 
         # Сотрудники видят только события своей команды
         if actor.role == RoleEnum.EMPLOYEE:
@@ -424,8 +455,8 @@ class CalendarService:
         cal = python_calendar.monthcalendar(year, month)
 
         for week_days in cal:
-            week_start = None
             days = []
+            week_start = None
 
             for day_num in week_days:
                 if day_num == 0:
@@ -433,7 +464,10 @@ class CalendarService:
                     continue
 
                 day_date = datetime(year, month, day_num)
+
+                # Устанавливаем week_start для первого валидного дня недели
                 if week_start is None:
+                    # Находим понедельник этой недели
                     week_start = day_date - timedelta(days=day_date.weekday())
 
                 # События этого дня
@@ -453,7 +487,8 @@ class CalendarService:
                     )
                 )
 
-            if days:  # Если есть дни в этой неделе
+            # Создаем неделю только если есть дни И week_start определен
+            if days and week_start is not None:
                 week_end = week_start + timedelta(
                     days=6, hours=23, minutes=59, seconds=59
                 )

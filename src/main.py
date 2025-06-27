@@ -1,5 +1,7 @@
 from contextlib import asynccontextmanager
 
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,6 +19,7 @@ from users.routers import (
     users_router,
 )
 from meetings.routers import meetings_router
+from calendars.routers import calendar_router
 
 
 @asynccontextmanager
@@ -88,7 +91,7 @@ def create_app() -> FastAPI:
         prefix="/api/evaluations",
         tags=["Оценки"],
     )
-    
+
     # Meetings роутеры
     app.include_router(
         meetings_router,
@@ -96,7 +99,18 @@ def create_app() -> FastAPI:
         tags=["Встречи"],
     )
 
-    @app.get("/")
+    # Calendar роутеры
+    app.include_router(
+        calendar_router,
+        prefix="/api/calendar",
+        tags=["Календарь"],
+    )
+
+    @app.get("/", response_class=FileResponse)
+    async def read_index():
+        return FileResponse("index.html")
+
+    @app.get("/api")
     async def root():
         """Главная страница"""
         return {"message": "Business Manager", "docs": "/docs", "version": "1.0"}
