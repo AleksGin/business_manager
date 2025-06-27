@@ -1,4 +1,5 @@
 from typing import (
+    Any,
     Dict,
     List,
     Optional,
@@ -20,6 +21,7 @@ from core.dependencies.depends import (
     UserRepoDep,
     UserValidatorDep,
     UUIDGeneratorDep,
+    TeamMembershipDep,
 )
 from users.models import RoleEnum
 from users.interactors.user_interactos import (
@@ -30,12 +32,20 @@ from users.interactors.user_interactos import (
     GetUsersWithoutTeamInteractor,
     QueryUserInteractor,
     UpdateUserInteractor,
+    AssignRoleInteractor,
+    RemoveRoleInteractor,
+    LeaveTeamInteractor,
+    GetUserStatsInteractor,
+    JoinTeamByCodeInteractor,
 )
+from users.interactors.auth_interactors import AdminActivateUserInteractor
 from users.schemas.user import (
     UserCreate,
     UserInTeam,
     UserResponse,
     UserUpdate,
+    UserAssignRole,
+    UserJoinTeam,
 )
 
 router = APIRouter()
@@ -323,6 +333,266 @@ async def get_users_without_team(
     except ValueError as e:
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+@router.post(
+    "/{user_uuid}/assign-role",
+    status_code=status.HTTP_200_OK,
+)
+async def assign_role(
+    user_uuid: UUID,
+    role_data: UserAssignRole,
+    current_user: CurrentUserDep,
+    session: SessionDep,
+    user_repo: UserRepoDep,
+) -> Dict[str, str]:
+    """Назначить роль пользователю (только для админов)"""
+
+    interactor = AssignRoleInteractor(
+        user_repo=user_repo,
+        permission_validator=None,  # Пока None
+        db_session=session,
+    )
+
+    try:
+        result = await interactor(
+            actor_uuid=current_user.uuid,
+            target_uuid=user_uuid,
+            new_role=role_data.role,
+        )
+
+        if result:
+            return {"message": f"Роль {role_data.role.value} успешно назначена"}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Не удалось назначить роль",
+            )
+
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except PermissionError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
+
+
+@router.delete(
+    "/{user_uuid}/role",
+    status_code=status.HTTP_200_OK,
+)
+async def remove_role(
+    user_uuid: UUID,
+    current_user: CurrentUserDep,
+    session: SessionDep,
+    user_repo: UserRepoDep,
+) -> Dict[str, str]:
+    """Убрать роль пользователя (сделать EMPLOYEE)"""
+
+    interactor = RemoveRoleInteractor(
+        user_repo=user_repo,
+        permission_validator=None,
+        db_session=session,
+    )
+
+    try:
+        result = await interactor(
+            actor_uuid=current_user.uuid,
+            target_uuid=user_uuid,
+        )
+
+        if result:
+            return {"message": "Роль убрана, пользователь теперь EMPLOYEE"}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Не удалось убрать роль",
+            )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except PermissionError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e),
+        )
+
+
+@router.post(
+    "/{user_uuid}/activate",
+    status_code=status.HTTP_200_OK,
+)
+async def activate_user(
+    user_uuid: UUID,
+    current_user: CurrentUserDep,
+    session: SessionDep,
+    user_repo: UserRepoDep,
+    activation_manager: UserActivationDep,
+) -> Dict[str, str]:
+    """Активировать пользователя (только для админов)"""
+
+    activate_interactor = AdminActivateUserInteractor(
+        activation_manager=activation_manager,
+        permission_validator=None,
+        user_repo=user_repo,
+        db_session=session,
+    )
+
+    try:
+        result = await activate_interactor.activate(
+            actor_uuid=current_user.uuid,
+            target_uuid=user_uuid,
+        )
+
+        if result:
+            return {"message": "Пользователь успешно активирован"}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Не удалось активировать пользователя",
+            )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except PermissionError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e),
+        )
+
+
+@router.post(
+    "/{user_uuid}/deactivate",
+    status_code=status.HTTP_200_OK,
+)
+async def deactivate_user(
+    user_uuid: UUID,
+    current_user: CurrentUserDep,
+    session: SessionDep,
+    user_repo: UserRepoDep,
+    activation_manager: UserActivationDep,
+) -> Dict[str, str]:
+    """Деактивировать пользователя (только для админов)"""
+
+    activate_interactor = AdminActivateUserInteractor(
+        activation_manager=activation_manager,
+        permission_validator=None,
+        user_repo=user_repo,
+        db_session=session,
+    )
+
+    try:
+        result = await activate_interactor.deactivate(
+            actor_uuid=current_user.uuid,
+            target_uuid=user_uuid,
+        )
+
+        if result:
+            return {"message": "Пользователь успешно деактивирован"}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Не удалось деактивировать пользователя",
+            )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except PermissionError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e),
+        )
+
+
+@router.post(
+    "/{user_uuid}/join-team-by-code",
+    status_code=status.HTTP_200_OK,
+)
+async def join_team_by_code(
+    user_uuid: UUID,
+    team_data: UserJoinTeam,
+    current_user: CurrentUserDep,
+    session: SessionDep,
+    user_repo: UserRepoDep,
+    membership_manager: TeamMembershipDep,
+) -> Dict[str, str]:
+    """Присоединиться к команде по коду приглашения"""
+
+    interactor = JoinTeamByCodeInteractor(
+        user_repo=user_repo,
+        team_membership_manager=membership_manager,
+        permission_validator=None,
+        db_session=session,
+    )
+
+    try:
+        result = await interactor(
+            actor_uuid=current_user.uuid,
+            target_uuid=user_uuid,
+            invite_code=team_data.invite_code,
+        )
+
+        if result:
+            return {"message": "Успешно присоединился к команде"}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Не удалось присоединиться к команде",
+            )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except PermissionError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e),
+        )
+
+
+@router.get(
+    "/{user_uuid}/stats",
+    status_code=status.HTTP_200_OK,
+)
+async def get_user_stats(
+    user_uuid: UUID,
+    current_user: CurrentUserDep,
+    user_repo: UserRepoDep,
+) -> Dict[str, Any]:
+    """Получить статистику пользователя"""
+
+    interactor = GetUserStatsInteractor(
+        user_repo=user_repo,
+        permission_validator=None,
+    )
+
+    try:
+        stats = await interactor(
+            actor_uuid=current_user.uuid,
+            target_uuid=user_uuid,
+        )
+
+        return stats
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except PermissionError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
             detail=str(e),
         )
 
