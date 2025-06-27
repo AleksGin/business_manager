@@ -6,10 +6,17 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from core.config import settings
 from core.models import db_helper
+from evaluations.routers import evaluations_router
+from tasks.routers import tasks_router
+from teams.routers import (
+    members_router,
+    teams_router,
+)
 from users.routers import (
     auth_router,
     users_router,
 )
+from meetings.routers import meetings_router
 
 
 @asynccontextmanager
@@ -41,17 +48,52 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    # Подключаем роутеры
+    # Auth роутеры
     app.include_router(
         auth_router,
         prefix=settings.api_prefix.auth,
         tags=["Аутентификация"],
     )
 
+    # Users роутеры
     app.include_router(
         users_router,
         prefix=settings.api_prefix.user,
         tags=["Пользователи"],
+    )
+
+    # Teams роутеры
+    app.include_router(
+        teams_router,
+        prefix="/api/teams",
+        tags=["Команды"],
+    )
+
+    app.include_router(
+        members_router,
+        prefix="/api/teams",
+        tags=["Участники команд"],
+    )
+
+    # Tasks роутеры
+    app.include_router(
+        tasks_router,
+        prefix="/api/tasks",
+        tags=["Задачи"],
+    )
+
+    # Evaluations роутеры
+    app.include_router(
+        evaluations_router,
+        prefix="/api/evaluations",
+        tags=["Оценки"],
+    )
+    
+    # Meetings роутеры
+    app.include_router(
+        meetings_router,
+        prefix="/api/meetings",
+        tags=["Встречи"],
     )
 
     @app.get("/")
