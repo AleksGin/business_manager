@@ -212,7 +212,7 @@ class AdminActivateUserInteractor:
     def __init__(
         self,
         activation_manager: UserActivationManager,
-        permission_validator: PermissionValidator,
+        permission_validator: Optional[PermissionValidator],
         user_repo: UserRepository,
         db_session: DBSession,
     ) -> None:
@@ -228,8 +228,9 @@ class AdminActivateUserInteractor:
             if not actor:
                 raise ValueError("Администратор не найден")
 
-            if not await self._permission_validator.is_system_admin(actor):
-                raise PermissionError("Нет прав для активации пользователей")
+            if self._permission_validator:
+                if not await self._permission_validator.is_system_admin(actor):
+                    raise PermissionError("Нет прав для активации пользователей")
 
             result = await self._activation_manager.activate_user(
                 target_uuid,
@@ -257,8 +258,9 @@ class AdminActivateUserInteractor:
             if not actor:
                 raise ValueError("Администратор не найден")
 
-            if not await self._permission_validator.is_system_admin(actor):
-                raise PermissionError("Нет прав для деактивации пользователей")
+            if self._permission_validator:
+                if not await self._permission_validator.is_system_admin(actor):
+                    raise PermissionError("Нет прав для деактивации пользователей")
 
             result = await self._activation_manager.deactivate_user(
                 target_uuid,
