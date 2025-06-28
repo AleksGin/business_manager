@@ -17,6 +17,7 @@ alembic = "^1.15.2"
 bcrypt = "^4.3.0"
 uvicorn = "^0.34.3"
 sqladmin = "^0.20.1"
+pytest = "^8.4.1"
 
 
 [tool.poetry.group.dev.dependencies]
