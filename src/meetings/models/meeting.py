@@ -42,9 +42,16 @@ class Meeting(Base):
         nullable=False,
     )
     participants: Mapped[List["User"]] = relationship(
-        "User", secondary=meeting_participants, back_populates="meetings"
+        "User",
+        secondary=meeting_participants,
+        back_populates="meetings",
     )
     creator: Mapped["User"] = relationship(
-        "User", foreign_keys=[creator_uuid], back_populates="created_meetings"
+        "User",
+        foreign_keys=[creator_uuid],
+        back_populates="created_meetings",
     )
-    team: Mapped["Team"] = relationship("Team", back_populates="meetings")
+    team: Mapped["Team"] = relationship(
+        "Team",
+        back_populates="meetings",
+    )

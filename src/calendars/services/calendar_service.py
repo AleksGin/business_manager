@@ -232,7 +232,9 @@ class CalendarService:
         overdue_events = [
             e
             for e in await self._get_events_for_period(
-                datetime(2020, 1, 1), now, final_filter
+                datetime(2020, 1, 1),
+                now,
+                final_filter,
             )
             if e.is_overdue
         ]
