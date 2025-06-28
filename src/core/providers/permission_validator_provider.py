@@ -31,8 +31,8 @@ class PermissionValidatorProvider(PermissionValidator):
 
         # Менеджеры видят участников своей команды и пользователей без команды
         if actor.role == RoleEnum.MANAGER:
-            # Участники той же команды
-            if actor.team_uuid and actor.team_uuid == target_user.team_uuid:
+            # Участники той же команды (оба должны быть в команде)
+            if actor.team_uuid is not None and actor.team_uuid == target_user.team_uuid:
                 return True
             # Пользователи без команды (для приглашения)
             if target_user.team_uuid is None:
@@ -40,7 +40,9 @@ class PermissionValidatorProvider(PermissionValidator):
 
         # Сотрудники видят только участников своей команды
         if actor.role == RoleEnum.EMPLOYEE:
-            return actor.team_uuid and actor.team_uuid == target_user.team_uuid
+            return (
+                actor.team_uuid is not None and actor.team_uuid == target_user.team_uuid
+            )
 
         return False
 
