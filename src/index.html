@@ -4,937 +4,221 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Business Manager</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
-            --bg-tertiary: #334155;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --accent: #3b82f6;
-            --accent-hover: #2563eb;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --border: #374151;
-            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.6;
-        }
-
-        .app {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            grid-template-rows: 60px 1fr;
-            height: 100vh;
-            grid-template-areas: 
-                "sidebar header"
-                "sidebar main";
-        }
-
-        /* Header */
-        .header {
-            grid-area: header;
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 2rem;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--accent);
-        }
-
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: var(--accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            grid-area: sidebar;
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border);
-            padding: 1rem 0;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1.5rem;
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-
-        .nav-item:hover, .nav-item.active {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-
-        .nav-item.active {
-            border-right: 3px solid var(--accent);
-        }
-
-        /* Main Content */
-        .main {
-            grid-area: main;
-            padding: 2rem;
-            overflow-y: auto;
-        }
-
-        .page {
-            display: none;
-        }
-
-        .page.active {
-            display: block;
-        }
-
-        /* Cards */
-        .card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: var(--shadow);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .card-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-weight: 500;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--accent-hover);
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-sm {
-            padding: 0.5rem 1rem;
-            font-size: 0.875rem;
-        }
-
-        /* Forms */
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 0.75rem;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text-primary);
-            font-size: 1rem;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--accent);
-        }
-
-        .stat-label {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
-
-        /* Task List */
-        .task-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-            background: var(--bg-tertiary);
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-        }
-
-        .task-title {
-            font-weight: 500;
-        }
-
-        .task-deadline {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
-
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-
-        .status-open {
-            background: var(--warning);
-            color: var(--bg-primary);
-        }
-
-        .status-progress {
-            background: var(--accent);
-            color: white;
-        }
-
-        .status-done {
-            background: var(--success);
-            color: white;
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-        }
-
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            padding: 2rem;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        /* Notifications */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            z-index: 1001;
-            transform: translateX(400px);
-            transition: transform 0.3s;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        .notification-success {
-            background: var(--success);
-        }
-
-        .notification-error {
-            background: var(--danger);
-        }
-
-        /* Auth Page */
-        .auth-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 2rem;
-        }
-
-        .auth-card {
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            padding: 2rem;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: var(--shadow);
-        }
-
-        .auth-title {
-            font-size: 1.75rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 2rem;
-            color: var(--accent);
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .app {
-                grid-template-columns: 1fr;
-                grid-template-areas: 
-                    "header"
-                    "main";
-            }
-
-            .sidebar {
-                display: none;
-            }
-
-            .header {
-                padding: 0 1rem;
-            }
-
-            .main {
-                padding: 1rem;
-            }
-        }
-
-        /* Loading */
-        .loading {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid var(--text-secondary);
-            border-top: 2px solid var(--accent);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
-    <!-- Auth Page -->
-    <div id="auth-page" class="page active">
-        <div class="auth-container">
-            <div class="auth-card">
-                <h1 class="auth-title">Business Manager</h1>
-                
-                <!-- Login Form -->
-                <div id="login-form">
-                    <form id="loginForm">
-                        <div class="form-group">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-input" name="email" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Пароль</label>
-                            <input type="password" class="form-input" name="password" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">
-                            Войти
-                        </button>
-                    </form>
-                    <p style="text-align: center; color: var(--text-secondary);">
-                        Нет аккаунта? 
-                        <a href="#" onclick="showRegister()" style="color: var(--accent);">Регистрация</a>
-                    </p>
-                </div>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Auth Section -->
+    <div id="auth-section" class="min-h-screen flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+            <h2 class="text-2xl font-bold mb-6 text-center text-blue-600">
+                📊 Business Manager
+            </h2>
+            
+            <div class="mb-4">
+                <button id="toggle-auth" class="text-blue-600 hover:text-blue-800 text-sm">
+                    Нет аккаунта? Регистрация
+                </button>
+            </div>
 
-                <!-- Register Form -->
-                <div id="register-form" style="display: none;">
-                    <form id="registerForm">
-                        <div class="form-group">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-input" name="email" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Имя</label>
-                            <input type="text" class="form-input" name="name" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Фамилия</label>
-                            <input type="text" class="form-input" name="surname" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Пол</label>
-                            <select class="form-input" name="gender" required>
-                                <option value="">Выберите пол</option>
-                                <option value="Man">Мужской</option>
-                                <option value="Woman">Женский</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Дата рождения</label>
-                            <input type="date" class="form-input" name="birth_date" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Пароль</label>
-                            <input type="password" class="form-input" name="password" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">
-                            Зарегистрироваться
-                        </button>
-                    </form>
-                    <p style="text-align: center; color: var(--text-secondary);">
-                        Уже есть аккаунт? 
-                        <a href="#" onclick="showLogin()" style="color: var(--accent);">Войти</a>
-                    </p>
+            <!-- Login Form -->
+            <div id="login-form">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                        <input type="email" id="login-email" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500" placeholder="user@example.com">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Пароль</label>
+                        <input type="password" id="login-password" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500" placeholder="Минимум 10 символов">
+                    </div>
+                    <button id="login-btn" class="w-full bg-blue-600 text-white py-3 px-4 rounded hover:bg-blue-700">
+                        Войти
+                    </button>
                 </div>
+            </div>
+
+            <!-- Register Form -->
+            <div id="register-form" class="hidden">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                        <input type="email" id="reg-email" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500" placeholder="user@example.com">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Имя</label>
+                        <input type="text" id="reg-name" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500" placeholder="Иван">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Фамилия</label>
+                        <input type="text" id="reg-surname" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500" placeholder="Иванов">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Пол</label>
+                        <select id="reg-gender" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500">
+                            <option value="Man">Мужской</option>
+                            <option value="Woman">Женский</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Дата рождения</label>
+                        <input type="date" id="reg-birth-date" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Пароль</label>
+                        <input type="password" id="reg-password" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500" placeholder="Минимум 10 символов">
+                    </div>
+                    <button id="register-btn" class="w-full bg-blue-600 text-white py-3 px-4 rounded hover:bg-blue-700">
+                        Зарегистрироваться
+                    </button>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <div id="error-message" class="hidden mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
             </div>
         </div>
     </div>
 
-    <!-- Main App -->
-    <div id="main-app" class="app page">
+    <!-- Dashboard Section -->
+    <div id="dashboard-section" class="hidden min-h-screen">
         <!-- Header -->
-        <header class="header">
-            <div class="logo">📊 Business Manager</div>
-            <div class="user-menu">
-                <span id="user-name">Пользователь</span>
-                <div class="user-avatar" id="user-avatar">U</div>
-                <button class="btn btn-sm" onclick="logout()">Выход</button>
+        <header class="bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <h1 class="text-xl font-semibold text-gray-900">📊 Business Manager</h1>
+                    <div class="flex items-center space-x-4">
+                        <span id="user-info" class="text-sm text-gray-600"></span>
+                        <button id="make-admin-btn" class="hidden px-3 py-1 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600">
+                            Стать админом
+                        </button>
+                        <button id="logout-btn" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                            Выйти
+                        </button>
+                    </div>
+                </div>
             </div>
         </header>
 
-        <!-- Sidebar -->
-        <nav class="sidebar">
-            <a href="#" class="nav-item active" onclick="showPage('dashboard')">
-                📈 Дашборд
-            </a>
-            <a href="#" class="nav-item" onclick="showPage('tasks')">
-                ✅ Задачи
-            </a>
-            <a href="#" class="nav-item" onclick="showPage('teams')">
-                👥 Команды
-            </a>
-            <a href="#" class="nav-item" onclick="showPage('meetings')">
-                🤝 Встречи
-            </a>
-            <a href="#" class="nav-item" onclick="showPage('calendar')">
-                📅 Календарь
-            </a>
-            <a href="#" class="nav-item" onclick="showPage('users')">
-                👤 Пользователи
-            </a>
-        </nav>
-
         <!-- Main Content -->
-        <main class="main">
-            <!-- Dashboard Page -->
-            <div id="dashboard" class="page active">
-                <h1>Дашборд</h1>
-                
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="total-tasks">0</div>
-                        <div class="stat-label">Всего задач</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="completed-tasks">0</div>
-                        <div class="stat-label">Выполнено</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="upcoming-meetings">0</div>
-                        <div class="stat-label">Предстоящих встреч</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="team-members">0</div>
-                        <div class="stat-label">Участников команды</div>
-                    </div>
-                </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Tabs -->
+            <div class="flex space-x-2 mb-6">
+                <button class="tab-btn active" data-tab="dashboard">📊 Дашборд</button>
+                <button class="tab-btn" data-tab="users">👥 Пользователи</button>
+                <button class="tab-btn" data-tab="teams">🏢 Команды</button>
+                <button class="tab-btn" data-tab="tasks">📋 Задачи</button>
+                <button class="tab-btn" data-tab="meetings">🤝 Встречи</button>
+            </div>
 
-                <div class="card">
-                    <div class="card-title">Мои задачи</div>
-                    <div id="dashboard-tasks">
-                        <div class="loading">
-                            <div class="spinner"></div>
-                            Загрузка задач...
-                        </div>
+            <!-- Loading -->
+            <div id="loading" class="hidden text-center py-8">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <p class="mt-2 text-gray-600">Загрузка...</p>
+            </div>
+
+            <!-- Dashboard Tab -->
+            <div id="tab-dashboard" class="tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-lg font-medium text-gray-900">Пользователи</h3>
+                        <p id="stats-users" class="text-3xl font-bold text-blue-600">0</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-lg font-medium text-gray-900">Команды</h3>
+                        <p id="stats-teams" class="text-3xl font-bold text-green-600">0</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-lg font-medium text-gray-900">Задачи</h3>
+                        <p id="stats-tasks" class="text-3xl font-bold text-yellow-600">0</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-lg font-medium text-gray-900">Выполнено</h3>
+                        <p id="stats-completed" class="text-3xl font-bold text-purple-600">0</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Tasks Page -->
-            <div id="tasks" class="page">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                    <h1>Задачи</h1>
-                    <button class="btn btn-primary" onclick="openModal('task-modal')">
-                        + Создать задачу
-                    </button>
-                </div>
-
-                <div class="card">
-                    <div id="tasks-list">
-                        <div class="loading">
-                            <div class="spinner"></div>
-                            Загрузка задач...
-                        </div>
+            <!-- Users Tab -->
+            <div id="tab-users" class="tab-content hidden">
+                <div class="bg-white rounded-lg shadow">
+                    <div class="px-6 py-4 border-b">
+                        <h3 class="text-lg font-medium text-gray-900">Пользователи</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Пользователь</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Роль</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Статус</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table" class="divide-y divide-gray-200">
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Teams Page -->
-            <div id="teams" class="page">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                    <h1>Команды</h1>
-                    <button class="btn btn-primary" onclick="openModal('team-modal')">
-                        + Создать команду
-                    </button>
-                </div>
-
-                <div class="card">
-                    <div id="teams-list">
-                        <div class="loading">
-                            <div class="spinner"></div>
-                            Загрузка команд...
-                        </div>
+            <!-- Teams Tab -->
+            <div id="tab-teams" class="tab-content hidden">
+                <div class="bg-white rounded-lg shadow">
+                    <div class="px-6 py-4 border-b">
+                        <h3 class="text-lg font-medium text-gray-900">Команды</h3>
+                    </div>
+                    <div id="teams-content" class="p-6">
                     </div>
                 </div>
             </div>
 
-            <!-- Meetings Page -->
-            <div id="meetings" class="page">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                    <h1>Встречи</h1>
-                    <button class="btn btn-primary" onclick="openModal('meeting-modal')">
-                        + Создать встречу
-                    </button>
-                </div>
-
-                <div class="card">
-                    <div id="meetings-list">
-                        <div class="loading">
-                            <div class="spinner"></div>
-                            Загрузка встреч...
-                        </div>
+            <!-- Tasks Tab -->
+            <div id="tab-tasks" class="tab-content hidden">
+                <div class="bg-white rounded-lg shadow">
+                    <div class="px-6 py-4 border-b">
+                        <h3 class="text-lg font-medium text-gray-900">Задачи</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Название</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Статус</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Дедлайн</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tasks-table" class="divide-y divide-gray-200">
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Calendar Page -->
-            <div id="calendar" class="page">
-                <h1>Календарь</h1>
-                <div class="card">
-                    <div class="card-title">Предстоящие события</div>
-                    <div id="calendar-events">
-                        <div class="loading">
-                            <div class="spinner"></div>
-                            Загрузка событий...
-                        </div>
+            <!-- Meetings Tab -->
+            <div id="tab-meetings" class="tab-content hidden">
+                <div class="bg-white rounded-lg shadow">
+                    <div class="px-6 py-4 border-b">
+                        <h3 class="text-lg font-medium text-gray-900">Встречи</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Название</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Дата и время</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Команда</th>
+                                </tr>
+                            </thead>
+                            <tbody id="meetings-table" class="divide-y divide-gray-200">
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-
-            <!-- Users Page -->
-            <div id="users" class="page">
-                <h1>Пользователи</h1>
-                <div class="card">
-                    <div id="users-list">
-                        <div class="loading">
-                            <div class="spinner"></div>
-                            Загрузка пользователей...
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Modals -->
-    <div id="task-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Создать задачу</h3>
-                <button class="close-btn" onclick="closeModal('task-modal')">&times;</button>
-            </div>
-            <form id="taskForm">
-                <div class="form-group">
-                    <label class="form-label">Название</label>
-                    <input type="text" class="form-input" name="title" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Описание</label>
-                    <textarea class="form-input" name="description" rows="3"></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Дедлайн</label>
-                    <input type="datetime-local" class="form-input" name="deadline" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Команда</label>
-                    <select class="form-input" name="team_uuid" required>
-                        <option value="">Выберите команду</option>
-                    </select>
-                </div>
-                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                    <button type="button" class="btn" onclick="closeModal('task-modal')">Отмена</button>
-                    <button type="submit" class="btn btn-primary">Создать</button>
-                </div>
-            </form>
         </div>
     </div>
 
-    <!-- Notification -->
-    <div id="notification" class="notification"></div>
-
-    <script>
-        // API Configuration
-        const API_BASE = 'http://localhost:8000';
-        let accessToken = localStorage.getItem('access_token');
-        let currentUser = null;
-
-        // API Helper
-        async function apiCall(endpoint, options = {}) {
-            const url = `${API_BASE}${endpoint}`;
-            const config = {
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(accessToken && { 'Authorization': `Bearer ${accessToken}` })
-                },
-                ...options
-            };
-
-            try {
-                const response = await fetch(url, config);
-                
-                if (response.status === 401) {
-                    logout();
-                    return null;
-                }
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.detail || 'Произошла ошибка');
-                }
-
-                return await response.json();
-            } catch (error) {
-                showNotification(error.message, 'error');
-                throw error;
-            }
-        }
-
-        // Auth Functions
-        async function login(email, password) {
-            const response = await fetch(`${API_BASE}/api/auth/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email: email,
-                    password: password
-                })
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.detail || 'Ошибка входа');
-            }
-
-            const data = await response.json();
-            accessToken = data.access_token;
-            localStorage.setItem('access_token', accessToken);
-            localStorage.setItem('refresh_token', data.refresh_token);
-            
-            currentUser = data.user;
-            showMainApp();
-        }
-
-        async function register(userData) {
-            const data = await apiCall('/api/auth/register', {
-                method: 'POST',
-                body: JSON.stringify(userData)
-            });
-
-            accessToken = data.access_token;
-            localStorage.setItem('access_token', accessToken);
-            localStorage.setItem('refresh_token', data.refresh_token);
-            
-            currentUser = data.user;
-            showMainApp();
-        }
-
-        function logout() {
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
-            accessToken = null;
-            currentUser = null;
-            showAuthPage();
-        }
-
-        // UI Functions
-        function showAuthPage() {
-            document.getElementById('auth-page').classList.add('active');
-            document.getElementById('main-app').classList.remove('active');
-        }
-
-        function showMainApp() {
-            document.getElementById('auth-page').classList.remove('active');
-            document.getElementById('main-app').classList.add('active');
-            
-            if (currentUser) {
-                document.getElementById('user-name').textContent = `${currentUser.name} ${currentUser.surname}`;
-                document.getElementById('user-avatar').textContent = currentUser.name[0].toUpperCase();
-            }
-            
-            loadDashboard();
-        }
-
-        function showLogin() {
-            document.getElementById('login-form').style.display = 'block';
-            document.getElementById('register-form').style.display = 'none';
-        }
-
-        function showRegister() {
-            document.getElementById('login-form').style.display = 'none';
-            document.getElementById('register-form').style.display = 'block';
-        }
-
-        function showPage(pageId) {
-            // Hide all pages
-            document.querySelectorAll('.main .page').forEach(page => {
-                page.classList.remove('active');
-            });
-            
-            // Remove active from nav items
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            // Show selected page
-            document.getElementById(pageId).classList.add('active');
-            
-            // Set active nav item
-            event.target.classList.add('active');
-
-            // Load page data
-            switch(pageId) {
-                case 'dashboard':
-                    loadDashboard();
-                    break;
-                case 'tasks':
-                    loadTasks();
-                    break;
-                case 'teams':
-                    loadTeams();
-                    break;
-                case 'meetings':
-                    loadMeetings();
-                    break;
-                case 'calendar':
-                    loadCalendar();
-                    break;
-                case 'users':
-                    loadUsers();
-                    break;
-            }
-        }
-
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification notification-${type} show`;
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-
-        // Data Loading Functions
-        async function loadDashboard() {
-            try {
-                // Load stats
-                const tasks = await apiCall('/api/tasks/');
-                const meetings = await apiCall('/api/meetings/');
-                const users = await apiCall('/api/users/');
-
-                document.getElementById('total-tasks').textContent = tasks?.length || 0;
-                document.getElementById('completed-tasks').textContent = 
-                    tasks?.filter(t => t.status === 'Done').length || 0;
-                document.getElementById('upcoming-meetings').textContent = meetings?.length || 0;
-                document.getElementById('team-members').textContent = users?.length || 0;
-
-                // Load recent tasks
-                const tasksHtml = tasks?.slice(0, 5).map(task => `
-                    <div class="task-item">
-                        <div>
-                            <div class="task-title">${task.title}</div>
-                            <div class="task-deadline">До: ${new Date(task.deadline).toLocaleDateString()}</div>
-                        </div>
-                        <span class="status-badge status-${task.status.toLowerCase().replace(' ', '-')}">${task.status}</span>
-                    </div>
-                `).join('') || '<p>Нет задач</p>';
-
-                document.getElementById('dashboard-tasks').innerHTML = tasksHtml;
-
-            } catch (error) {
-                console.error('Ошибка загрузки дашборда:', error);
-            }
-        }
-
-        async function loadTasks() {
-            try {
-                const tasks = await apiCall('/api/tasks/');
-                const tasksHtml = tasks?.map(task => `
-                    <div class="task-item">
-                        <div>
-                            <div class="task-title">${task.title}</div>
-                            <div class="task-deadline">До: ${new Date(task.deadline).toLocaleDateString()}</div>
-                            ${task.description ? `<div style="color: var(--text-secondary); font-size: 0.875rem;">${task.description}</div>` : ''}
-                        </div>
-                        <span class="status-badge status-${task.status.toLowerCase().replace(' ', '-')}">${task.status}</span>
-                    </div>
-                `).join('') || '<p>Нет задач</p>';
-
-                document.getElementById('tasks-list').innerHTML = tasksHtml;
-            } catch (error) {
-                document.getElementById('tasks-list').innerHTML = '<p>Ошибка загрузки задач</p>';
-            }
-        }
-
-        async function loadTeams() {
-            try {
-                const teams = await apiCall('/api/teams/');
-                const teamsHtml = teams?.map(team => `
-                    <div class="task-item">
-                        <div>
-                            <div class="task-title">${team.name}</div>
-                            <div style="color: var(--text-secondary); font-size: 0.875rem;">${team.description}</div>
-                        </div>
-                        <button class="btn btn-sm btn-primary">Просмотр</button>
-                    </div>
-                `).join('') || '<p>Нет команд</p>';
-
-                document.getElementById('teams-list').innerHTML = teamsHtml;
-            } catch (error) {
-                document.getElementById('teams-list').innerHTML = '<p>Ошибка загрузки команд</p>';
-            }
-        }
-
-        async function loadMeetings() {
-            try {
-                const meetings = await apiCall('/api/meetings/');
-                const meetingsHtml = meetings?.map(meeting => `
-                    <div class="task-item">
-                        <div>
-                            <div class="task-title">${meeting.title}</div>
-                            
+    <script src="/static/script.js"></script>
+</body>
+</html>
