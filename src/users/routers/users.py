@@ -22,6 +22,8 @@ from core.dependencies.depends import (
     UserValidatorDep,
     UUIDGeneratorDep,
     TeamMembershipDep,
+    PermissionValidatorDep,
+    TeamRepoDep,
 )
 from users.models import RoleEnum
 from users.interactors.user_interactos import (
@@ -65,6 +67,7 @@ async def create_user(
     user_validator: UserValidatorDep,
     uuid_generator: UUIDGeneratorDep,
     activation_manager: UserActivationDep,
+    permission_validator: PermissionValidatorDep,
 ) -> UserResponse:
     """Создание нового пользователя"""
 
@@ -81,7 +84,7 @@ async def create_user(
         user_repo=user_repo,
         password_hasher=password_hasher,
         user_validator=user_validator,
-        permission_validator=None,
+        permission_validator=permission_validator,
         uuid_generator=uuid_generator,
         db_session=session,
         activate_manager=activation_manager,
@@ -114,6 +117,8 @@ async def create_user(
 async def list_users(
     current_user: CurrentUserDep,
     user_repo: UserRepoDep,
+    team_repo: TeamRepoDep,
+    permission_validator: PermissionValidatorDep,
     limit: int = Query(default=50, le=100),
     offset: int = Query(default=0, ge=0),
     team_uuid: Optional[UUID] = Query(default=None),
@@ -122,7 +127,8 @@ async def list_users(
 
     get_list_users_interactor = QueryUserInteractor(
         user_repo=user_repo,
-        permission_validator=None,
+        team_repo=team_repo,
+        permission_validator=permission_validator,
     )
 
     try:
@@ -155,12 +161,13 @@ async def get_user(
     user_uuid: UUID,
     current_user: CurrentUserDep,
     user_repo: UserRepoDep,
+    permission_validator: PermissionValidatorDep,
 ) -> UserResponse:
     """Получить пользователя по UUID"""
 
     get_user_interactor = GetUserInteractor(
         user_repo=user_repo,
-        permission_validator=None,
+        permission_validator=permission_validator,
     )
 
     try:
@@ -196,13 +203,14 @@ async def update_user(
     session: SessionDep,
     user_repo: UserRepoDep,
     user_validator: UserValidatorDep,
+    permission_validator: PermissionValidatorDep,
 ) -> UserResponse:
     """Обновить пользователя"""
 
     update_user_interactor = UpdateUserInteractor(
         user_repo=user_repo,
         user_validator=user_validator,
-        permission_validator=None,
+        permission_validator=permission_validator,
         db_session=session,
     )
 
@@ -237,12 +245,13 @@ async def delete_user(
     current_user: CurrentUserDep,
     session: SessionDep,
     user_repo: UserRepoDep,
+    permission_validator: PermissionValidatorDep,
 ) -> Dict[str, str]:
     """Удалить пользователя"""
 
     delete_user_interactor = DeleteUserInteractor(
         user_repo=user_repo,
-        permission_validator=None,
+        permission_validator=permission_validator,
         db_session=session,
     )
 
@@ -275,6 +284,8 @@ async def delete_user(
 async def search_users(
     current_user: CurrentUserDep,
     user_repo: UserRepoDep,
+    permission_validator: PermissionValidatorDep,
+    team_repo: TeamRepoDep,
     limit: int = Query(default=20, le=50),
     team_uuid: Optional[UUID] = Query(default=None),
     exclude_team: bool = Query(default=False),
@@ -284,7 +295,8 @@ async def search_users(
 
     search_user_interactor = QueryUserInteractor(
         user_repo=user_repo,
-        permission_validator=None,
+        team_repo=team_repo,
+        permission_validator=permission_validator,
     )
 
     users = await search_user_interactor(
@@ -306,6 +318,7 @@ async def search_users(
 async def get_users_without_team(
     current_user: CurrentUserDep,
     user_repo: UserRepoDep,
+    permission_validator: PermissionValidatorDep,
     limit: int = Query(default=50, le=100),
     offset: int = Query(default=0, ge=0),
 ) -> List[UserInTeam]:
@@ -314,7 +327,7 @@ async def get_users_without_team(
     # Создаем интерактора
     interactor = GetUsersWithoutTeamInteractor(
         user_repo=user_repo,
-        permission_validator=None,
+        permission_validator=permission_validator,
     )
     try:
         users = await interactor(
@@ -347,12 +360,13 @@ async def assign_role(
     current_user: CurrentUserDep,
     session: SessionDep,
     user_repo: UserRepoDep,
+    permission_validator: PermissionValidatorDep,
 ) -> Dict[str, str]:
     """Назначить роль пользователю (только для админов)"""
 
     interactor = AssignRoleInteractor(
         user_repo=user_repo,
-        permission_validator=None,  # Пока None
+        permission_validator=permission_validator,
         db_session=session,
     )
 
@@ -386,12 +400,13 @@ async def remove_role(
     current_user: CurrentUserDep,
     session: SessionDep,
     user_repo: UserRepoDep,
+    permission_validator: PermissionValidatorDep,
 ) -> Dict[str, str]:
     """Убрать роль пользователя (сделать EMPLOYEE)"""
 
     interactor = RemoveRoleInteractor(
         user_repo=user_repo,
-        permission_validator=None,
+        permission_validator=permission_validator,
         db_session=session,
     )
 
@@ -431,12 +446,13 @@ async def activate_user(
     session: SessionDep,
     user_repo: UserRepoDep,
     activation_manager: UserActivationDep,
+    permission_validator: PermissionValidatorDep,
 ) -> Dict[str, str]:
     """Активировать пользователя (только для админов)"""
 
     activate_interactor = AdminActivateUserInteractor(
         activation_manager=activation_manager,
-        permission_validator=None,
+        permission_validator=permission_validator,
         user_repo=user_repo,
         db_session=session,
     )
@@ -477,12 +493,13 @@ async def deactivate_user(
     session: SessionDep,
     user_repo: UserRepoDep,
     activation_manager: UserActivationDep,
+    permission_validator: PermissionValidatorDep,
 ) -> Dict[str, str]:
     """Деактивировать пользователя (только для админов)"""
 
     activate_interactor = AdminActivateUserInteractor(
         activation_manager=activation_manager,
-        permission_validator=None,
+        permission_validator=permission_validator,
         user_repo=user_repo,
         db_session=session,
     )
@@ -524,13 +541,14 @@ async def join_team_by_code(
     session: SessionDep,
     user_repo: UserRepoDep,
     membership_manager: TeamMembershipDep,
+    permission_validator: PermissionValidatorDep,
 ) -> Dict[str, str]:
     """Присоединиться к команде по коду приглашения"""
 
     interactor = JoinTeamByCodeInteractor(
         user_repo=user_repo,
         team_membership_manager=membership_manager,
-        permission_validator=None,
+        permission_validator=permission_validator,
         db_session=session,
     )
 
@@ -569,12 +587,13 @@ async def get_user_stats(
     user_uuid: UUID,
     current_user: CurrentUserDep,
     user_repo: UserRepoDep,
+    permission_validator: PermissionValidatorDep,
 ) -> Dict[str, Any]:
     """Получить статистику пользователя"""
 
     interactor = GetUserStatsInteractor(
         user_repo=user_repo,
-        permission_validator=None,
+        permission_validator=permission_validator,
     )
 
     try:

@@ -8,9 +8,9 @@ from uuid import UUID
 from core.interfaces import (
     DBSession,
     PermissionValidator,
-    RoleManager,
     UUIDGenerator,
 )
+from teams.interfaces import TeamRepository
 from teams.interfaces import (
     TeamMembershipManager,
 )
@@ -62,7 +62,7 @@ class CreateUserInteractor:
         user_repo: UserRepository,
         password_hasher: PasswordHasher,
         user_validator: UserValidator,
-        permission_validator: Optional[PermissionValidator],
+        permission_validator: PermissionValidator,
         uuid_generator: UUIDGenerator,
         db_session: DBSession,
         activate_manager: UserActivationManager,
@@ -167,7 +167,7 @@ class GetUserInteractor:
     def __init__(
         self,
         user_repo: UserRepository,
-        permission_validator: Optional[PermissionValidator],
+        permission_validator: PermissionValidator,
     ) -> None:
         self._user_repo = user_repo
         self._permission_validator = permission_validator
@@ -189,12 +189,11 @@ class GetUserInteractor:
 
         # 2. Проверить права доступа
 
-        if self._permission_validator:
-            if not await self._permission_validator.can_view_user(
-                actor,
-                target,
-            ):
-                raise PermissionError("Нет прав для просмотра данных пользователя")
+        if not await self._permission_validator.can_view_user(
+            actor,
+            target,
+        ):
+            raise PermissionError("Нет прав для просмотра данных пользователя")
 
         return target
 
@@ -214,12 +213,11 @@ class GetUserInteractor:
 
         # 2. Проверка прав просмотра
 
-        if self._permission_validator:
-            if not await self._permission_validator.can_view_user(
-                actor,
-                target,
-            ):
-                raise PermissionError("Нет прав для просмотра данных пользователя")
+        if not await self._permission_validator.can_view_user(
+            actor,
+            target,
+        ):
+            raise PermissionError("Нет прав для просмотра данных пользователя")
 
         return target
 
@@ -230,7 +228,7 @@ class GetUsersWithoutTeamInteractor:
     def __init__(
         self,
         user_repo: UserRepository,
-        permission_validator: Optional[PermissionValidator],
+        permission_validator: PermissionValidator,
     ):
         self._user_repo = user_repo
         self._permission_validator = permission_validator
@@ -249,17 +247,8 @@ class GetUsersWithoutTeamInteractor:
             raise ValueError("Пользователь не найден")
 
         # 2. Проверить права
-        if self._permission_validator:
-            if not await self._permission_validator.can_view_users_without_team(actor):
-                raise PermissionError(
-                    "нет прав для просмотра пользователей без команды"
-                )
-        else:
-            # Простая проверка, если нет валидатора
-            if actor.role == RoleEnum.EMPLOYEE:
-                raise PermissionError(
-                    "Нет прав для просмотра пользователей без команды"
-                )
+        if not await self._permission_validator.can_view_users_without_team(actor):
+            raise PermissionError("нет прав для просмотра пользователей без команды")
 
         # 3. Получить данные
         return await self._user_repo.get_users_without_team(limit, offset)
@@ -272,7 +261,7 @@ class UpdateUserInteractor:
         self,
         user_repo: UserRepository,
         user_validator: UserValidator,
-        permission_validator: Optional[PermissionValidator],
+        permission_validator: PermissionValidator,
         db_session: DBSession,
     ) -> None:
         self._user_repo = user_repo
@@ -300,12 +289,11 @@ class UpdateUserInteractor:
 
             # 2. Проверить права доступа
 
-            if self._permission_validator:
-                if not await self._permission_validator.can_update_user(
-                    actor,
-                    target,
-                ):
-                    raise PermissionError("Нет прав для обновления пользователей")
+            if not await self._permission_validator.can_update_user(
+                actor,
+                target,
+            ):
+                raise PermissionError("Нет прав для обновления пользователей")
 
             # 3. Валидация изменений
 
@@ -326,22 +314,15 @@ class UpdateUserInteractor:
                     )
                 target.birth_date = update_data.birth_date
 
-            if self._permission_validator:
-                if update_data.role is not None:
-                    # Проеряем права назначения роли
-                    if not await self._permission_validator.can_assign_role(
-                        actor,
-                        target,
-                        update_data.role.value,
-                    ):
-                        raise PermissionError("Нет прав для назначение этой роли")
-                    target.role = update_data.role
-            # TODO УДАЛИТЬ КОД НИЖЕ
-            if actor.role == RoleEnum.ADMIN and update_data.role is not None:
+            if update_data.role is not None:
+                # Проеряем права назначения роли
+                if not await self._permission_validator.can_assign_role(
+                    actor,
+                    target,
+                    update_data.role.value,
+                ):
+                    raise PermissionError("Нет прав для назначение этой роли")
                 target.role = update_data.role
-
-            if update_data.team_uuid is not None:
-                target.team_uuid = update_data.team_uuid
 
             # 4. Сохранение
             updated_user = await self._user_repo.update_user(target)
@@ -359,7 +340,7 @@ class DeleteUserInteractor:
     def __init__(
         self,
         user_repo: UserRepository,
-        permission_validator: Optional[PermissionValidator],
+        permission_validator: PermissionValidator,
         db_session: DBSession,
     ) -> None:
         self._user_repo = user_repo
@@ -385,12 +366,11 @@ class DeleteUserInteractor:
 
             # 2. Проверить права доступа
 
-            if self._permission_validator:
-                if not await self._permission_validator.can_delete_user(
-                    actor,
-                    target,
-                ):
-                    raise PermissionError("Нет прав для удаления пользователей")
+            if not await self._permission_validator.can_delete_user(
+                actor,
+                target,
+            ):
+                raise PermissionError("Нет прав для удаления пользователей")
 
             # 3. Удаление
 
@@ -412,7 +392,7 @@ class JoinTeamByCodeInteractor:
         self,
         user_repo: UserRepository,
         team_membership_manager: TeamMembershipManager,
-        permission_validator: Optional[PermissionValidator],
+        permission_validator: PermissionValidator,
         db_session: DBSession,
     ) -> None:
         self._user_repo = user_repo
@@ -470,9 +450,11 @@ class QueryUserInteractor:
     def __init__(
         self,
         user_repo: UserRepository,
-        permission_validator: Optional[PermissionValidator],
+        team_repo: TeamRepository,
+        permission_validator: PermissionValidator,
     ) -> None:
         self._user_repo = user_repo
+        self._team_repo = team_repo
         self._permission_validator = permission_validator
 
     async def __call__(
@@ -492,6 +474,8 @@ class QueryUserInteractor:
             limit: Максимальное количество пользователей
             offset: Смещение для пагинации
             team_uuid: UUID команды для фильтрации (опционально)
+            search_query: Поисковый запрос
+            exclude_team: Исключить пользователей из указанной команды
 
         Returns:
             Список пользователей, доступных для просмотра
@@ -501,21 +485,15 @@ class QueryUserInteractor:
         if not actor:
             raise ValueError("Пользователь не найден")
 
-        # 2. Определить права доступа и применить фильтрацию
-        final_team_uuid = await self._determine_team_filter(
-            actor,
-            team_uuid,
-        )
+        # 2. Определить базовый фильтр на основе роли
+        final_team_uuid = self._determine_team_filter(actor, team_uuid)
 
-        # 3. Проверить права на просмотр конкретной команды (если указана)
-        if final_team_uuid and final_team_uuid != actor.team_uuid:
-            await self._check_team_access_permission(
-                actor,
-                final_team_uuid,
-            )
+        # 3. Если запрашивается конкретная команда - проверить права
+        if team_uuid:
+            await self._check_team_access_permission(actor, team_uuid)
 
+        # 4. Получить пользователей
         if search_query:
-            # 4. Поиск
             users = await self._user_repo.search_users(
                 query=search_query,
                 team_uuid=final_team_uuid,
@@ -523,7 +501,6 @@ class QueryUserInteractor:
                 limit=limit,
             )
         else:
-            # 4. Получить список пользователей
             users = await self._user_repo.list_users(
                 limit=limit,
                 offset=offset,
@@ -532,32 +509,27 @@ class QueryUserInteractor:
 
         return users
 
-    async def _determine_team_filter(
+    def _determine_team_filter(
         self,
         actor: User,
         requested_team_uuid: Optional[UUID],
     ) -> Optional[UUID]:
         """
-        Определить, какую команду показывать на основне роли пользователя
+        Определить базовый фильтр команды на основе роли пользователя
 
         Args:
             actor: Пользователь, запрашивающий список
             requested_team_uuid: Запрошенная команда (может быть None)
 
         Returns:
-            UUID команды для филтрации или None
+            UUID команды для фильтрации или None
         """
-
-        if actor.role == RoleEnum.ADMIN:
-            # Админы могут видеть всех пользователей или конкретную команду
-            return requested_team_uuid
-
-        elif actor.role == RoleEnum.MANAGER:
-            # Менеджеры могут видеть всех пользователей или конкретную команду
-            # (но права на конкретную команду проверятся отдельно)
-            return requested_team_uuid
-        else:
+        # Сотрудники видят только свою команду
+        if actor.role == RoleEnum.EMPLOYEE:
             return actor.team_uuid
+
+        # Админы и менеджеры могут указывать любую команду
+        return requested_team_uuid
 
     async def _check_team_access_permission(
         self,
@@ -571,21 +543,18 @@ class QueryUserInteractor:
             actor: Пользователь, запрашивающий список
             team_uuid: UUID команды для проверки
         """
-        if self._permission_validator:
-            # TODO
-            # team = await self._team_repo.get_by_uuid(team_uuid)
-            # if not team:
-            #     raise ValueError("Команда не найдена")
-            # can_view = await self._permission_validator.can_view_team_members(
-            #     actor,
-            #     team,
-            # )
-            # if not can_view:
-            #     raise PermissionError("Нет для просмотра команды")
-            pass
-        else:
-            if actor.role == RoleEnum.EMPLOYEE:
-                raise PermissionError("Нет прав для просмотра других команд")
+        # Найти команду
+        team = await self._team_repo.get_by_uuid(team_uuid)
+        if not team:
+            raise ValueError("Команда не найдена")
+
+        # Проверить права через PermissionValidator
+        can_view = await self._permission_validator.can_view_team_members(
+            actor,
+            team,
+        )
+        if not can_view:
+            raise PermissionError("Нет прав для просмотра участников этой команды")
 
 
 class AssignRoleInteractor:
@@ -594,7 +563,7 @@ class AssignRoleInteractor:
     def __init__(
         self,
         user_repo: UserRepository,
-        permission_validator: Optional[PermissionValidator],
+        permission_validator: PermissionValidator,
         db_session: DBSession,
     ) -> None:
         self._user_repo = user_repo
@@ -620,17 +589,12 @@ class AssignRoleInteractor:
                 raise ValueError("Пользователь для назначения роли не найден")
 
             # 2. Проверить права доступа
-            if self._permission_validator:
-                if not await self._permission_validator.can_assign_role(
-                    actor,
-                    target,
-                    new_role.value,
-                ):
-                    raise PermissionError("Нет прав для назначения роли")
-            else:
-                # Временная простая проверка до реализации PermissionValidator
-                if actor.role != RoleEnum.ADMIN:
-                    raise PermissionError("Только администраторы могут назначать роли")
+            if not await self._permission_validator.can_assign_role(
+                actor,
+                target,
+                new_role.value,
+            ):
+                raise PermissionError("Нет прав для назначения роли")
 
             # 3. Бизнес-правила
             if target.uuid == actor.uuid and new_role == RoleEnum.EMPLOYEE:
@@ -654,7 +618,7 @@ class RemoveRoleInteractor:
     def __init__(
         self,
         user_repo: UserRepository,
-        permission_validator: Optional[PermissionValidator],
+        permission_validator: PermissionValidator,
         db_session: DBSession,
     ) -> None:
         self._user_repo = user_repo
@@ -679,13 +643,12 @@ class RemoveRoleInteractor:
                 raise ValueError("Пользователь не найден")
 
             # 2. Проверить права доступа
-            if self._permission_validator:
-                if not await self._permission_validator.can_assign_role(
-                    actor,
-                    target,
-                    RoleEnum.EMPLOYEE.value,
-                ):
-                    raise PermissionError("Нет прав для изменения роли")
+            if not await self._permission_validator.can_assign_role(
+                actor,
+                target,
+                RoleEnum.EMPLOYEE.value,
+            ):
+                raise PermissionError("Нет прав для изменения роли")
             else:
                 # Временная простая проверка
                 if actor.role != RoleEnum.ADMIN:
@@ -713,7 +676,7 @@ class LeaveTeamInteractor:
     def __init__(
         self,
         user_repo: UserRepository,
-        permission_validator: Optional[PermissionValidator],
+        permission_validator: PermissionValidator,
         db_session: DBSession,
     ) -> None:
         self._user_repo = user_repo
@@ -742,9 +705,8 @@ class LeaveTeamInteractor:
             is_admin = actor.role == RoleEnum.ADMIN
 
             if not is_self_action and not is_admin:
-                if self._permission_validator:
-                    # TODO: Добавить проверку через PermissionValidator
-                    pass
+                # TODO: Добавить проверку через PermissionValidator
+                pass
                 raise PermissionError("Вы можете удалить из команды только себя")
 
             # 3. Бизнес-правила
@@ -772,7 +734,7 @@ class GetUserStatsInteractor:
     def __init__(
         self,
         user_repo: UserRepository,
-        permission_validator: Optional[PermissionValidator],
+        permission_validator: PermissionValidator,
     ) -> None:
         self._user_repo = user_repo
         self._permission_validator = permission_validator
@@ -794,9 +756,8 @@ class GetUserStatsInteractor:
             raise ValueError("Пользователь не найден")
 
         # 2. Проверить права доступа
-        if self._permission_validator:
-            if not await self._permission_validator.can_view_user(actor, target):
-                raise PermissionError("Нет прав для просмотра статистики")
+        if not await self._permission_validator.can_view_user(actor, target):
+            raise PermissionError("Нет прав для просмотра статистики")
         else:
             # Временная простая проверка
             is_self = target.uuid == actor.uuid

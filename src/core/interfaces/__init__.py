@@ -1,7 +1,6 @@
 __all__ = (
     "PermissionValidator",
     "DBSession",
-    "RoleManager",
     "UUIDGenerator",
     "JWTProviderInterface",
     "TokenRepository",
@@ -13,7 +12,6 @@ from .auth import (
 )
 from .common import (
     DBSession,
-    RoleManager,
     UUIDGenerator,
 )
 from .permissions import PermissionValidator
