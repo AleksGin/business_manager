@@ -40,8 +40,12 @@ def create_app() -> FastAPI:
         version="1.0",
         lifespan=lifespan,
     )
-    
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+
+    app.mount(
+        "/static",
+        StaticFiles(directory="static"),
+        name="static",
+    )
 
     # CORS middleware
 
@@ -109,7 +113,7 @@ def create_app() -> FastAPI:
     )
 
     @app.get("/", response_class=FileResponse)
-    async def read_index():
+    async def read_index() -> FileResponse:
         return FileResponse("index.html")
 
     @app.get("/api")
