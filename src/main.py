@@ -40,6 +40,8 @@ def create_app() -> FastAPI:
         version="1.0",
         lifespan=lifespan,
     )
+    
+    app.mount("/static", StaticFiles(directory="static"), name="static")
 
     # CORS middleware
 
