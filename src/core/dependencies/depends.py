@@ -1,3 +1,6 @@
+from core.interfaces.permissions import PermissionValidator
+from core.providers.permission_validator_provider import PermissionValidatorProvider
+
 from typing import (
     Annotated,
     AsyncGenerator,
@@ -320,3 +323,14 @@ def get_meeting_repository(
 # === Типы для аннотаций Meetings ===
 
 MeetingRepoDep = Annotated[MeetingRepository, Depends(get_meeting_repository)]
+
+
+def get_permission_validator() -> PermissionValidator:
+    """Получить валидатор прав доступа"""
+    return PermissionValidatorProvider()
+
+
+PermissionValidatorDep = Annotated[
+    PermissionValidator,
+    Depends(get_permission_validator),
+]

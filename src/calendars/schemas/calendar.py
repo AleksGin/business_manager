@@ -76,19 +76,38 @@ class CalendarMonth(BaseModel):
     month_name: str
     weeks: List[CalendarWeek] = Field(default_factory=list)
     total_events: int = Field(default=0)
-    summary: dict = Field(default_factory=dict, description="Сводка по месяцу")
+    summary: dict = Field(
+        default_factory=dict,
+        description="Сводка по месяцу",
+    )
 
 
 class CalendarFilter(BaseModel):
     """Фильтры для календаря"""
 
-    team_uuid: Optional[UUID] = Field(None, description="UUID команды")
-    user_uuid: Optional[UUID] = Field(None, description="UUID пользователя")
-    event_types: Optional[List[EventType]] = Field(None, description="Типы событий")
-    include_completed: bool = Field(True, description="Включать завершенные задачи")
-    include_overdue: bool = Field(True, description="Включать просроченные")
+    team_uuid: Optional[UUID] = Field(
+        None,
+        description="UUID команды",
+    )
+    user_uuid: Optional[UUID] = Field(
+        None,
+        description="UUID пользователя",
+    )
+    event_types: Optional[List[EventType]] = Field(
+        None,
+        description="Типы событий",
+    )
+    include_completed: bool = Field(
+        True,
+        description="Включать завершенные задачи",
+    )
+    include_overdue: bool = Field(
+        True,
+        description="Включать просроченные",
+    )
     priority_filter: Optional[List[EventPriority]] = Field(
-        None, description="Фильтр по приоритету"
+        None,
+        description="Фильтр по приоритету",
     )
 
 

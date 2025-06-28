@@ -16,6 +16,7 @@ fastapi = "^0.115.12"
 alembic = "^1.15.2"
 bcrypt = "^4.3.0"
 uvicorn = "^0.34.3"
+sqladmin = "^0.20.1"
 
 
 [tool.poetry.group.dev.dependencies]

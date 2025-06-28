@@ -7,6 +7,7 @@ __all__ = (
     "UserActivationDep",
     "UUIDGeneratorDep",
     "CurrentUserDep",
+    "PermissionValidatorDep",
     # Teams
     "TeamRepoDep",
     "TeamMembershipDep",
@@ -20,8 +21,12 @@ __all__ = (
 
 from .depends import (
     CurrentUserDep,
+    EvaluationRepoDep,
+    MeetingRepoDep,
     PasswordHasherDep,
+    PermissionValidatorDep,
     SessionDep,
+    TaskRepoDep,
     TeamMembershipDep,
     TeamRepoDep,
     TokenRepoDep,
@@ -29,7 +34,4 @@ from .depends import (
     UserRepoDep,
     UserValidatorDep,
     UUIDGeneratorDep,
-    TaskRepoDep,
-    EvaluationRepoDep,
-    MeetingRepoDep,
 )
