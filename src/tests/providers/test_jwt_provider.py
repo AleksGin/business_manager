@@ -12,5 +12,6 @@ from core.providers import JWTProvider
 
 
 class TestJWTProvider:
-    """Тестируем JWT Provider - аутентификации"""
+    """Тест JWT Provider"""
     
+
