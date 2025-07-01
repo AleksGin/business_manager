@@ -22,7 +22,7 @@ class ChangePasswordInteractor:
         user_repo: UserRepository,
         password_hasher: PasswordHasher,
         user_validator: UserValidator,
-        permission_validator: Optional[PermissionValidator],
+        permission_validator: PermissionValidator,
         db_session: DBSession,
     ) -> None:
         self._user_repo = user_repo
@@ -212,7 +212,7 @@ class AdminActivateUserInteractor:
     def __init__(
         self,
         activation_manager: UserActivationManager,
-        permission_validator: Optional[PermissionValidator],
+        permission_validator: PermissionValidator,
         user_repo: UserRepository,
         db_session: DBSession,
     ) -> None:

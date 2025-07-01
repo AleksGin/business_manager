@@ -90,7 +90,7 @@ class CreateUserInteractor:
         # 1. Самостоятельная регистрация
 
         try:
-            if actor_uuid is None or self._permission_validator is None:
+            if actor_uuid is None:
                 if dto.role != RoleEnum.EMPLOYEE:
                     raise PermissionError(
                         "При самостоятельной регистрации доступная роль только EMPLOYEE"
@@ -486,11 +486,17 @@ class QueryUserInteractor:
             raise ValueError("Пользователь не найден")
 
         # 2. Определить базовый фильтр на основе роли
-        final_team_uuid = self._determine_team_filter(actor, team_uuid)
+        final_team_uuid = self._determine_team_filter(
+            actor,
+            team_uuid,
+        )
 
         # 3. Если запрашивается конкретная команда - проверить права
         if team_uuid:
-            await self._check_team_access_permission(actor, team_uuid)
+            await self._check_team_access_permission(
+                actor,
+                team_uuid,
+            )
 
         # 4. Получить пользователей
         if search_query:
@@ -756,7 +762,10 @@ class GetUserStatsInteractor:
             raise ValueError("Пользователь не найден")
 
         # 2. Проверить права доступа
-        if not await self._permission_validator.can_view_user(actor, target):
+        if not await self._permission_validator.can_view_user(
+            actor,
+            target,
+        ):
             raise PermissionError("Нет прав для просмотра статистики")
         else:
             # Временная простая проверка
@@ -776,7 +785,9 @@ class GetUserStatsInteractor:
             "is_verified": target.is_verified,
             "team_uuid": str(target.team_uuid) if target.team_uuid else None,
             "created_at": target.created_at.isoformat(),
-            # Заглушки для статистики (заполним после реализации Tasks и Evaluations)
+            # Заглушки для статистики
+            
+            #TODO добавить после реализации Task и Evaluation
             "tasks_stats": {
                 "total_assigned": 0,
                 "completed": 0,

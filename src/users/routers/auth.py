@@ -1,4 +1,7 @@
-from typing import Any, Dict
+from typing import (
+    Any,
+    Dict,
+)
 
 from fastapi import (
     APIRouter,
@@ -18,7 +21,10 @@ from core.dependencies import (
     UUIDGeneratorDep,
 )
 from core.models import TokenType
-from core.providers import jwt_provider
+from core.providers import (
+    PermissionValidatorProvider,
+    jwt_provider,
+)
 from users.interactors.auth_interactors import (
     AuthenticateUserInteractor,
     ChangePasswordInteractor,
@@ -55,6 +61,7 @@ async def register(
     uuid_generator: UUIDGeneratorDep,
     token_repo: TokenRepoDep,
     activation_manager: UserActivationDep,
+    permission_validator: PermissionValidatorProvider,
 ) -> UserTokenResponse:
     """Регистрация нового пользователя"""
 
@@ -74,7 +81,7 @@ async def register(
         user_repo=user_repo,
         password_hasher=password_hasher,
         user_validator=user_validator,
-        permission_validator=None,
+        permission_validator=permission_validator,
         uuid_generator=uuid_generator,
         db_session=session,
         activate_manager=activation_manager,
@@ -282,6 +289,7 @@ async def change_password(
     user_repo: UserRepoDep,
     password_hasher: PasswordHasherDep,
     user_validator: UserValidatorDep,
+    permission_validator: PermissionValidatorProvider,
 ) -> Dict[str, str]:
     """Смена пароля"""
 
@@ -289,7 +297,7 @@ async def change_password(
         user_repo=user_repo,
         password_hasher=password_hasher,
         user_validator=user_validator,
-        permission_validator=None,
+        permission_validator=permission_validator,
         db_session=session,
     )
 
