@@ -1,4 +1,7 @@
-from pydantic import BaseModel
+from pydantic import (
+    BaseModel,
+    Field,
+)
 from pydantic_settings import (
     BaseSettings,
     SettingsConfigDict,
@@ -49,7 +52,8 @@ class Config(BaseSettings):
         case_sensitive=False,
         env_nested_delimiter="__",
     )
-    db_config: DB_Config
+    db_config: DB_Config = Field(..., alias="DB_CONFIG")
+    test_db_config: DB_Config = Field(..., alias="TEST_DB_CONFIG")
     auth: Auth
     api_prefix: ApiPrefix = ApiPrefix()
     app_config: AppConfigure = AppConfigure()
