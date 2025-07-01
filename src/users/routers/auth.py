@@ -19,10 +19,10 @@ from core.dependencies import (
     UserRepoDep,
     UserValidatorDep,
     UUIDGeneratorDep,
+    PermissionValidatorDep,
 )
 from core.models import TokenType
 from core.providers import (
-    PermissionValidatorProvider,
     jwt_provider,
 )
 from users.interactors.auth_interactors import (
@@ -61,7 +61,7 @@ async def register(
     uuid_generator: UUIDGeneratorDep,
     token_repo: TokenRepoDep,
     activation_manager: UserActivationDep,
-    permission_validator: PermissionValidatorProvider,
+    permission_validator: PermissionValidatorDep,
 ) -> UserTokenResponse:
     """Регистрация нового пользователя"""
 
@@ -289,7 +289,7 @@ async def change_password(
     user_repo: UserRepoDep,
     password_hasher: PasswordHasherDep,
     user_validator: UserValidatorDep,
-    permission_validator: PermissionValidatorProvider,
+    permission_validator: PermissionValidatorDep,
 ) -> Dict[str, str]:
     """Смена пароля"""
 
