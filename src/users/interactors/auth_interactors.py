@@ -51,7 +51,7 @@ class ChangePasswordInteractor:
                 raise ValueError("Целевой пользователь не найден")
 
             # 2. Проверить права доступа (либо сам пользователь, либо админ)
-            if actor.uuid != target.uuid and self._permission_validator is not None:
+            if actor.uuid != target.uuid:
                 if not await self._permission_validator.is_system_admin(actor):
                     raise PermissionError("Нет прав для смены пароля")
 
@@ -228,9 +228,8 @@ class AdminActivateUserInteractor:
             if not actor:
                 raise ValueError("Администратор не найден")
 
-            if self._permission_validator:
-                if not await self._permission_validator.is_system_admin(actor):
-                    raise PermissionError("Нет прав для активации пользователей")
+            if not await self._permission_validator.is_system_admin(actor):
+                raise PermissionError("Нет прав для активации пользователей")
 
             result = await self._activation_manager.activate_user(
                 target_uuid,
@@ -258,9 +257,8 @@ class AdminActivateUserInteractor:
             if not actor:
                 raise ValueError("Администратор не найден")
 
-            if self._permission_validator:
-                if not await self._permission_validator.is_system_admin(actor):
-                    raise PermissionError("Нет прав для деактивации пользователей")
+            if not await self._permission_validator.is_system_admin(actor):
+                raise PermissionError("Нет прав для деактивации пользователей")
 
             result = await self._activation_manager.deactivate_user(
                 target_uuid,
