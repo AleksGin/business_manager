@@ -16,32 +16,26 @@ from users.models import (
 class UserRepository(Protocol):
     """Интерфейс для работы с пользователями в хранилище данных"""
 
-    @abstractmethod
     async def create_user(self, user: User) -> User:
         """Создать нового пользователя в системе"""
         ...
 
-    @abstractmethod
     async def get_by_uuid(self, user_uuid: UUID) -> Optional[User]:
         """Получить пользователя по UUID. Возвращает None если не найден"""
         ...
 
-    @abstractmethod
     async def get_by_email(self, user_email: str) -> Optional[User]:
         """Получить пользователя по email. Возвращает None если не найден"""
         ...
 
-    @abstractmethod
     async def update_user(self, user: User) -> User:
         """Обновить данные существующего пользователя"""
         ...
 
-    @abstractmethod
     async def delete_user(self, user_uuid: UUID) -> bool:
         """Удалить пользователя. Возвращает True если удален успешно"""
         ...
 
-    @abstractmethod
     async def list_users(
         self,
         limit: int = 50,
