@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from datetime import datetime
 from typing import (
     List,
@@ -13,34 +12,28 @@ from meetings.models import Meeting
 class MeetingRepository(Protocol):
     """Интерфейс для работы с встречами в хранилище данных"""
 
-    @abstractmethod
     async def create_meeting(self, meeting: Meeting) -> Meeting:
         """Создать новую встречу"""
         ...
 
-    @abstractmethod
     async def get_by_uuid(self, meeting_uuid: UUID) -> Optional[Meeting]:
         """Получить встречу по UUID"""
         ...
 
-    @abstractmethod
     async def update_meeting(self, meeting: Meeting) -> Meeting:
         """Обновить встречу"""
         ...
 
-    @abstractmethod
     async def delete_meeting(self, meeting_uuid: UUID) -> bool:
         """Удалить встречу"""
         ...
 
-    @abstractmethod
     async def get_meeting_with_participants(
         self, meeting_uuid: UUID
     ) -> Optional[Meeting]:
         """Получить встречу с загруженными участниками"""
         ...
 
-    @abstractmethod
     async def list_meetings(
         self,
         limit: int = 50,
@@ -54,7 +47,6 @@ class MeetingRepository(Protocol):
         """Получить список встреч с фильтрацией"""
         ...
 
-    @abstractmethod
     async def get_user_meetings(
         self,
         user_uuid: UUID,
@@ -66,7 +58,6 @@ class MeetingRepository(Protocol):
         """Получить встречи пользователя (созданные или участвует)"""
         ...
 
-    @abstractmethod
     async def get_team_meetings(
         self,
         team_uuid: UUID,
@@ -78,7 +69,6 @@ class MeetingRepository(Protocol):
         """Получить встречи команды"""
         ...
 
-    @abstractmethod
     async def get_upcoming_meetings(
         self,
         user_uuid: Optional[UUID] = None,
@@ -88,7 +78,6 @@ class MeetingRepository(Protocol):
         """Получить предстоящие встречи"""
         ...
 
-    @abstractmethod
     async def get_meetings_by_date(
         self,
         target_date: datetime,
@@ -98,7 +87,6 @@ class MeetingRepository(Protocol):
         """Получить встречи на конкретную дату"""
         ...
 
-    @abstractmethod
     async def check_time_conflicts(
         self,
         user_uuid: UUID,
@@ -109,7 +97,6 @@ class MeetingRepository(Protocol):
         """Проверить конфликты времени для пользователя"""
         ...
 
-    @abstractmethod
     async def add_participant(
         self,
         meeting_uuid: UUID,
@@ -118,7 +105,6 @@ class MeetingRepository(Protocol):
         """Добавить участника во встречу"""
         ...
 
-    @abstractmethod
     async def remove_participant(
         self,
         meeting_uuid: UUID,
@@ -127,7 +113,6 @@ class MeetingRepository(Protocol):
         """Удалить участника из встречи"""
         ...
 
-    @abstractmethod
     async def is_participant(
         self,
         meeting_uuid: UUID,
@@ -136,7 +121,6 @@ class MeetingRepository(Protocol):
         """Проверить является ли пользователь участником встречи"""
         ...
 
-    @abstractmethod
     async def count_meetings_by_period(
         self,
         user_uuid: Optional[UUID] = None,

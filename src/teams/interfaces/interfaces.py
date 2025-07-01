@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from typing import (
     List,
     Optional,
@@ -12,37 +11,30 @@ from teams.models import Team
 class TeamRepository(Protocol):
     """Интерфейс для работы с командами в хранилище данных"""
 
-    @abstractmethod
     async def create_team(self, team: Team) -> Team:
         """Создать новую команду"""
         ...
 
-    @abstractmethod
     async def get_by_uuid(self, team_uuid: UUID) -> Optional[Team]:
         """Получить команду по UUID"""
         ...
 
-    @abstractmethod
     async def get_by_name(self, name: str) -> Optional[Team]:
         """Получить команду по названию"""
         ...
 
-    @abstractmethod
     async def update_team(self, team: Team) -> Team:
         """Обновить команду"""
         ...
 
-    @abstractmethod
     async def delete_team(self, team_uuid: UUID) -> bool:
         """Удалить команду"""
         ...
 
-    @abstractmethod
     async def get_user_teams(self, user_uuid: UUID) -> List[Team]:
         """Получить команды, где пользователь является владельцем"""
         ...
 
-    @abstractmethod
     async def list_teams(
         self,
         limit: int = 50,
@@ -52,17 +44,14 @@ class TeamRepository(Protocol):
         """Получить список команд с пагинацией и фильтрацией"""
         ...
 
-    @abstractmethod
     async def exists_by_name(self, name: str) -> bool:
         """Проверить существование команды по названию"""
         ...
 
-    @abstractmethod
     async def get_team_with_members(self, team_uuid: UUID) -> Optional[Team]:
         """Получить команду с загруженными участниками"""
         ...
 
-    @abstractmethod
     async def search_teams(
         self,
         query: str,
@@ -75,7 +64,6 @@ class TeamRepository(Protocol):
 class TeamMembershipManager(Protocol):
     """Интерфейс для управления членством пользователей в командах"""
 
-    @abstractmethod
     async def add_user_to_team(
         self,
         user_uuid: UUID,
@@ -92,7 +80,6 @@ class TeamMembershipManager(Protocol):
         """
         ...
 
-    @abstractmethod
     async def remove_user_from_team(
         self,
         user_uuid: UUID,
@@ -109,7 +96,6 @@ class TeamMembershipManager(Protocol):
         """
         ...
 
-    @abstractmethod
     async def transfer_team_ownership(
         self,
         team_uuid: UUID,
@@ -126,7 +112,6 @@ class TeamMembershipManager(Protocol):
         """
         ...
 
-    @abstractmethod
     async def generate_team_invite_code(
         self,
         team_uuid: UUID,
@@ -140,7 +125,6 @@ class TeamMembershipManager(Protocol):
         """
         ...
 
-    @abstractmethod
     async def join_team_by_code(
         self,
         user_uuid: UUID,

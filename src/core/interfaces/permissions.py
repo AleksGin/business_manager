@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from typing import (
     TYPE_CHECKING,
     Protocol,
@@ -16,7 +15,6 @@ class PermissionValidator(Protocol):
 
     # ========== USER PERMISSIONS ==========
 
-    @abstractmethod
     async def can_view_user(
         self,
         actor: "User",
@@ -25,7 +23,6 @@ class PermissionValidator(Protocol):
         """Есть ли доступ у actor к просмотру пользователя"""
         ...
 
-    @abstractmethod
     async def can_assign_role(
         self,
         actor: "User",
@@ -35,7 +32,6 @@ class PermissionValidator(Protocol):
         """Есть ли права у actor менять/назачать роль пользователя"""
         ...
 
-    @abstractmethod
     async def can_delete_user(
         self,
         actor: "User",
@@ -44,7 +40,6 @@ class PermissionValidator(Protocol):
         """Есть ли возможность у actor удалять пользователя"""
         ...
 
-    @abstractmethod
     async def can_update_user(
         self,
         actor: "User",
@@ -53,19 +48,16 @@ class PermissionValidator(Protocol):
         """Есть ли возможность у actor обновлять информацию пользователя"""
         ...
 
-    @abstractmethod
     async def can_view_users_without_team(self, actor: "User") -> bool:
         """Есть ли возможность у actor просматривать пользователей без команды"""
         ...
 
     # ========== TEAM PERMISSIONS ==========
 
-    @abstractmethod
     async def can_create_team(self, actor: "User") -> bool:
         """Есть ли возможность у actor создавать команду"""
         ...
 
-    @abstractmethod
     async def can_view_team(
         self,
         actor: "User",
@@ -74,7 +66,6 @@ class PermissionValidator(Protocol):
         """Есть ли возможность у actor просматривать команду"""
         ...
 
-    @abstractmethod
     async def can_update_team(
         self,
         actor: "User",
@@ -83,7 +74,6 @@ class PermissionValidator(Protocol):
         """Есть ли возможность у actor обновлять команду"""
         ...
 
-    @abstractmethod
     async def can_delete_team(
         self,
         actor: "User",
@@ -92,7 +82,6 @@ class PermissionValidator(Protocol):
         """Есть ли возможность у actor удалять команду"""
         ...
 
-    @abstractmethod
     async def can_add_team_member(
         self,
         actor: "User",
@@ -101,7 +90,6 @@ class PermissionValidator(Protocol):
         """Есть ли возможность у actor добавлять участников в команду"""
         ...
 
-    @abstractmethod
     async def can_remove_team_member(
         self,
         actor: "User",
@@ -110,17 +98,16 @@ class PermissionValidator(Protocol):
         """Есть ли возможность у actor удалять участников из команды"""
         ...
 
-    @abstractmethod
     async def can_view_team_members(
         self,
         actor: "User",
         team: "Team",
     ) -> bool:
         """Есть ли возможность у actor просматривать участников команды"""
+        ...
 
     # ========== TASK PERMISSIONS ==========
 
-    @abstractmethod
     async def can_create_task(
         self,
         actor: "User",
@@ -129,7 +116,6 @@ class PermissionValidator(Protocol):
         """Может ли actor создавать задачи в команде"""
         ...
 
-    @abstractmethod
     async def can_view_task(
         self,
         actor: "User",
@@ -138,7 +124,6 @@ class PermissionValidator(Protocol):
         """Может ли actor просматривать задачи"""
         ...
 
-    @abstractmethod
     async def can_delete_task(
         self,
         actor: "User",
@@ -147,7 +132,6 @@ class PermissionValidator(Protocol):
         """Может ли actor удалять задачу"""
         ...
 
-    @abstractmethod
     async def can_assign_task(
         self,
         actor: "User",
@@ -157,7 +141,6 @@ class PermissionValidator(Protocol):
         """Может ли actor обновлять информацию задачу"""
         ...
 
-    @abstractmethod
     async def can_update_task(
         self,
         actor: "User",
@@ -166,7 +149,6 @@ class PermissionValidator(Protocol):
         """Может ли actor обновлять информацию задачу"""
         ...
 
-    @abstractmethod
     async def can_change_task_status(
         self,
         actor: "User",
@@ -177,7 +159,6 @@ class PermissionValidator(Protocol):
 
     # ========== TASK PERMISSIONS ==========
 
-    @abstractmethod
     async def can_create_meetings(
         self,
         actor: "User",
@@ -186,7 +167,6 @@ class PermissionValidator(Protocol):
         """Может ли actor созадвать встречи в команде"""
         ...
 
-    @abstractmethod
     async def can_update_meeting(
         self,
         actor: "User",
@@ -195,7 +175,6 @@ class PermissionValidator(Protocol):
         """Может ли actor обновлять информацию встречи"""
         ...
 
-    @abstractmethod
     async def can_delete_meeting(
         self,
         actor: "User",
@@ -204,7 +183,6 @@ class PermissionValidator(Protocol):
         """Может ли actor удалить встречу"""
         ...
 
-    @abstractmethod
     async def can_add_meeting_participant(
         self,
         actor: "User",
@@ -215,7 +193,6 @@ class PermissionValidator(Protocol):
 
     # ========== EVALUATION PERMISSIONS ==========
 
-    @abstractmethod
     async def can_create_evaluation(
         self,
         actor: "User",
@@ -224,7 +201,6 @@ class PermissionValidator(Protocol):
         """Может ли actor создавать оценку для задачи"""
         ...
 
-    @abstractmethod
     async def can_view_evaluation(
         self,
         actor: "User",
@@ -233,7 +209,6 @@ class PermissionValidator(Protocol):
         """Может ли actor просматривать оценку задачи"""
         ...
 
-    @abstractmethod
     async def can_update_evaluation(
         self,
         actor: "User",
@@ -244,12 +219,10 @@ class PermissionValidator(Protocol):
 
     # ========== SYSTEM PERMISSIONS ==========
 
-    @abstractmethod
     async def is_system_admin(self, actor: "User") -> bool:
         """Является ли actor системных администратором"""
         ...
 
-    @abstractmethod
     async def is_team_admin(
         self,
         actor: "User",
@@ -258,7 +231,6 @@ class PermissionValidator(Protocol):
         """Является ли actor администратором команды"""
         ...
 
-    @abstractmethod
     async def is_team_manager(
         self,
         actor: "User",
@@ -267,7 +239,6 @@ class PermissionValidator(Protocol):
         """Является ли actor менеджером команды"""
         ...
 
-    @abstractmethod
     async def is_team_member(
         self,
         actor: "User",
