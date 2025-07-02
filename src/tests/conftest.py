@@ -208,7 +208,10 @@ async def employee_user(
 
 
 # ================ ФИКСТУРЫ ПОЛЬЗОВАТЕЛЕЙ ================
-async def authenticated_client(client: AsyncClient, admin_user: User) -> AsyncClient:
+async def authenticated_client(
+    client: AsyncClient,
+    admin_user: User,
+) -> AsyncClient:
     """Клиент с авторизованным админом"""
 
     login_data = {"email": admin_user.email, "password": "AdminPassword123!"}
